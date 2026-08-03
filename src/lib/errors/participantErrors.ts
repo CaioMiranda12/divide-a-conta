@@ -3,3 +3,9 @@ export class ParticipantNotFoundError extends Error {
     super('participant_not_found');
   }
 }
+
+export class DisplayNameAlreadyInUseError extends Error {
+  constructor() {
+    super('display_name_already_in_use');
+  }
+}
