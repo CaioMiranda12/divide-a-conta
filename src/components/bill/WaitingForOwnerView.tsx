@@ -8,6 +8,20 @@ const STATUS_MESSAGES: Record<BillStatus, string> = {
   failed: 'Não foi possível processar essa conta.',
 };
 
+const STATUS_COLOR_CLASS_NAME: Record<BillStatus, string> = {
+  processing: 'text-pending',
+  draft: 'text-pending',
+  open: 'text-confirmed',
+  closed: 'text-ink-muted',
+  failed: 'text-stamp',
+};
+
 export function WaitingForOwnerView({ status }: { status: BillStatus }) {
-  return <p>{STATUS_MESSAGES[status]}</p>;
+  return (
+    <div className="max-w-md mx-auto px-4 py-16 text-center">
+      <p className={`font-display text-lg ${STATUS_COLOR_CLASS_NAME[status]}`}>
+        {STATUS_MESSAGES[status]}
+      </p>
+    </div>
+  );
 }
