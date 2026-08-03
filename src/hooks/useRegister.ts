@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { apiFetch, ApiError } from '@/lib/api/apiClient';
 import type { ApiUser } from '@/types/api';
 import type { RegisterFormValues } from '@/schemas/auth';
@@ -9,8 +9,12 @@ export function useRegister() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[] | undefined>>({});
+  const isRequestInFlightRef = useRef(false);
 
   async function register(values: RegisterFormValues): Promise<ApiUser | null> {
+    if (isRequestInFlightRef.current) return null;
+
+    isRequestInFlightRef.current = true;
     setIsSubmitting(true);
     setErrorCode(null);
     setFieldErrors({});
@@ -33,6 +37,7 @@ export function useRegister() {
 
       return null;
     } finally {
+      isRequestInFlightRef.current = false;
       setIsSubmitting(false);
     }
   }
