@@ -1,7 +1,6 @@
 generator client {
-  provider        = "prisma-client"
-  previewFeatures = ["driverAdapters"]
-  output          = "../src/generated/prisma"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -23,8 +22,7 @@ model User {
   passwordHash String   @map("password_hash")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  ownedBills   Bill[]        @relation("BillOwner")
-  participants Participant[]
+  ownedBills Bill[] @relation("BillOwner")
 
   @@map("users")
 }
@@ -67,8 +65,6 @@ model Participant {
 
   bill   Bill        @relation(fields: [billId], references: [id], onDelete: Cascade)
   claims ItemClaim[]
-  user   User?       @relation(fields: [userId], references: [id])
-  userId String?
 
   @@unique([billId, displayName])
   @@map("participants")
