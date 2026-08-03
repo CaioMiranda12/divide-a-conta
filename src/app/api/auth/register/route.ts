@@ -9,7 +9,10 @@ export async function POST(request: NextRequest) {
   const parsedBody = registerSchema.safeParse(body);
 
   if (!parsedBody.success) {
-    return NextResponse.json({ error: 'invalid_body' }, { status: StatusCodes.BAD_REQUEST });
+    return NextResponse.json(
+      { error: 'invalid_body', issues: parsedBody.error.flatten().fieldErrors },
+      { status: StatusCodes.BAD_REQUEST },
+    );
   }
 
   try {

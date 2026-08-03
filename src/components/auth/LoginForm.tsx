@@ -32,6 +32,10 @@ export function LoginForm() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
+    const isPasswordTooShort = isRegisterMode && password.length < 8;
+
+    if (isPasswordTooShort) return;
+
     const user = isRegisterMode
       ? await register({ name, email, password })
       : await login({ email, password });
@@ -75,6 +79,7 @@ export function LoginForm() {
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Senha"
             required
+            minLength={isRegisterMode ? 8 : undefined}
             className="w-full bg-transparent border-b border-paper-line py-2 font-body text-sm focus:outline-none focus:border-ink"
           />
         </div>
