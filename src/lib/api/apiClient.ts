@@ -3,11 +3,21 @@ const API_BASE_PATH = '/api';
 export class ApiError extends Error {
   status: number;
   code: string;
+  fieldErrors?: Record<string, string[] | undefined>;
 
-  constructor({ status, code }: { status: number; code: string }) {
+  constructor({
+    status,
+    code,
+    fieldErrors,
+  }: {
+    status: number;
+    code: string;
+    fieldErrors?: Record<string, string[] | undefined>;
+  }) {
     super(code);
     this.status = status;
     this.code = code;
+    this.fieldErrors = fieldErrors;
   }
 }
 
@@ -42,11 +52,10 @@ export async function apiFetch<TResponse>({
   const hasFailed = !response.ok;
 
   if (hasFailed) {
-    const code = typeof (data as { error?: string })?.error === 'string'
-      ? (data as { error: string }).error
-      : 'unknown_error';
+    const parsedData = data as { error?: string; issues?: Record<string, string[]> };
+    const code = typeof parsedData?.error === 'string' ? parsedData.error : 'unknown_error';
 
-    throw new ApiError({ status: response.status, code });
+    throw new ApiError({ status: response.status, code, fieldErrors: parsedData?.issues });
   }
 
   return data as TResponse;
