@@ -9,50 +9,38 @@ export function useItemClaim({ billId }: { billId: string }) {
 
   async function claimItem({
     billItemId,
+    participantId,
     splitCount,
   }: {
     billItemId: string;
+    participantId: string;
     splitCount: number;
   }): Promise<boolean> {
     setIsSubmitting(true);
     setErrorCode(null);
 
     try {
-      await apiFetch({
-        path: `/bill/${billId}/claim`,
-        method: 'POST',
-        body: { billItemId, splitCount },
-      });
+      await apiFetch({ path: `/bill/${billId}/claim`, method: 'POST', body: { billItemId, participantId, splitCount } });
 
       return true;
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : 'unknown_error';
-
-      setErrorCode(code);
-
+      setErrorCode(error instanceof ApiError ? error.code : 'unknown_error');
       return false;
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function unclaimItem({ billItemId }: { billItemId: string }): Promise<boolean> {
+  async function unclaimItem({ billItemId, participantId }: { billItemId: string; participantId: string }): Promise<boolean> {
     setIsSubmitting(true);
     setErrorCode(null);
 
     try {
-      await apiFetch({
-        path: `/bill/${billId}/claim`,
-        method: 'DELETE',
-        body: { billItemId },
-      });
+      await apiFetch({ path: `/bill/${billId}/claim`, method: 'DELETE', body: { billItemId, participantId } });
 
       return true;
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : 'unknown_error';
-
-      setErrorCode(code);
-
+      setErrorCode(error instanceof ApiError ? error.code : 'unknown_error');
       return false;
     } finally {
       setIsSubmitting(false);
