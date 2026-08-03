@@ -50,12 +50,16 @@ export function LoginForm() {
   }, [registerFieldErrors, registerForm]);
 
   async function handleLoginSubmit(values: LoginFormValues) {
+    if (isSubmitting) return;
+
     const user = await login(values);
 
     if (user) router.push(redirectTo);
   }
 
   async function handleRegisterSubmit(values: RegisterFormValues) {
+    if (isSubmitting) return;
+
     const user = await registerUser(values);
 
     if (user) router.push(redirectTo);
