@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 import { requireCurrentUser } from '@/services/auth/getCurrentUser';
-import { joinBill } from '@/services/participant/joinBill';
-import { isValidUuid } from '@/utils/uuid';
+import { createParticipant } from '@/services/participant/createParticipant';
+import { createParticipantSchema } from '@/schemas/participant';
 import { UnauthenticatedError } from '@/lib/errors/authErrors';
-import { BillNotFoundError, BillNotOpenError } from '@/lib/errors/billErrors';
+import { BillNotFoundError, BillOwnershipError } from '@/lib/errors/billErrors';
+import { DisplayNameAlreadyInUseError } from '@/lib/errors/participantErrors';
 
 export async function POST(
   request: NextRequest,
@@ -12,18 +13,23 @@ export async function POST(
 ) {
   const { billId } = await params;
 
-  if (!isValidUuid({ value: billId })) {
-    return NextResponse.json({ error: 'invalid_bill_id' }, { status: StatusCodes.BAD_REQUEST });
+  const body = await request.json();
+  const parsedBody = createParticipantSchema.safeParse(body);
+
+  if (!parsedBody.success) {
+    return NextResponse.json({ error: 'invalid_body' }, { status: StatusCodes.BAD_REQUEST });
   }
 
   try {
     const currentUser = await requireCurrentUser();
-    const { participant, wasCreated } = await joinBill({ billId, userId: currentUser.id });
 
-    return NextResponse.json(
-      { participant },
-      { status: wasCreated ? StatusCodes.CREATED : StatusCodes.OK },
-    );
+    const participant = await createParticipant({
+      billId,
+      currentUserId: currentUser.id,
+      displayName: parsedBody.data.displayName,
+    });
+
+    return NextResponse.json({ participant }, { status: StatusCodes.CREATED });
   } catch (error) {
     if (error instanceof UnauthenticatedError) {
       return NextResponse.json({ error: 'unauthenticated' }, { status: StatusCodes.UNAUTHORIZED });
@@ -33,8 +39,12 @@ export async function POST(
       return NextResponse.json({ error: 'bill_not_found' }, { status: StatusCodes.NOT_FOUND });
     }
 
-    if (error instanceof BillNotOpenError) {
-      return NextResponse.json({ error: 'bill_not_open' }, { status: StatusCodes.CONFLICT });
+    if (error instanceof BillOwnershipError) {
+      return NextResponse.json({ error: 'forbidden' }, { status: StatusCodes.FORBIDDEN });
+    }
+
+    if (error instanceof DisplayNameAlreadyInUseError) {
+      return NextResponse.json({ error: 'display_name_already_in_use' }, { status: StatusCodes.CONFLICT });
     }
 
     throw error;

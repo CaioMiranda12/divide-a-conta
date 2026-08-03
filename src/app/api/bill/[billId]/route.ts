@@ -19,9 +19,9 @@ export async function GET(
 
   try {
     const currentUser = await requireCurrentUser();
-    const { bill, items } = await getBillById({ billId, currentUserId: currentUser.id });
+    const { bill, items, participants } = await getBillById({ billId, currentUserId: currentUser.id });
 
-    return NextResponse.json({ bill, items }, { status: StatusCodes.OK });
+    return NextResponse.json({ bill, items, participants }, { status: StatusCodes.OK });
   } catch (error) {
     if (error instanceof UnauthenticatedError) {
       return NextResponse.json({ error: 'unauthenticated' }, { status: StatusCodes.UNAUTHORIZED });
@@ -29,6 +29,10 @@ export async function GET(
 
     if (error instanceof BillNotFoundError) {
       return NextResponse.json({ error: 'bill_not_found' }, { status: StatusCodes.NOT_FOUND });
+    }
+
+    if (error instanceof BillOwnershipError) {
+      return NextResponse.json({ error: 'forbidden' }, { status: StatusCodes.FORBIDDEN });
     }
 
     throw error;
