@@ -114,29 +114,39 @@ export function OwnerBillEditor({
   }
 
   return (
-    <div>
+    <div className="max-w-md mx-auto px-4 py-8">
       <input
         value={restaurantName}
         onChange={(event) => setRestaurantName(event.target.value)}
         onBlur={handleHeaderFieldBlur}
         placeholder="Nome do restaurante"
         disabled={!canEditItems}
+        className="w-full bg-transparent font-display text-2xl tracking-wide focus:outline-none placeholder:text-ink-muted disabled:text-ink-muted"
       />
 
-      {editableItems.map((item) => (
-        <BillItemRow
-          key={item.id}
-          item={item}
-          isEditable={canEditItems}
-          onFieldChange={(field, value) => updateItemField({ itemId: item.id, field, value })}
-          onBlur={() => handleItemBlur({ itemId: item.id })}
-          onRemove={() => removeItem({ itemId: item.id })}
-        />
-      ))}
+      <div className="mt-6">
+        {editableItems.map((item) => (
+          <BillItemRow
+            key={item.id}
+            item={item}
+            isEditable={canEditItems}
+            onFieldChange={(field, value) => updateItemField({ itemId: item.id, field, value })}
+            onBlur={() => handleItemBlur({ itemId: item.id })}
+            onRemove={() => removeItem({ itemId: item.id })}
+          />
+        ))}
+      </div>
 
-      {canEditItems && <button onClick={addItem}>Adicionar item</button>}
+      {canEditItems && (
+        <button
+          onClick={addItem}
+          className="mt-3 text-sm font-body text-confirmed hover:text-stamp"
+        >
+          + adicionar item
+        </button>
+      )}
 
-      <label>
+      <label className="mt-6 flex items-center justify-between font-body text-sm">
         Taxa de serviço (%)
         <input
           type="number"
@@ -144,13 +154,20 @@ export function OwnerBillEditor({
           onChange={(event) => setServiceFeePercent(Number(event.target.value))}
           onBlur={handleHeaderFieldBlur}
           disabled={!canEditItems}
+          className="w-16 bg-transparent font-money text-right tabular-nums focus:outline-none disabled:text-ink-muted border-b border-paper-line"
         />
       </label>
 
-      {isSubmitting && <span>Salvando...</span>}
+      {isSubmitting && (
+        <span className="block mt-2 text-xs font-body text-ink-muted">Salvando...</span>
+      )}
 
       {isDraft && (
-        <button onClick={() => confirmBill().then((hasSucceeded) => hasSucceeded && onBillChanged())} disabled={isConfirming}>
+        <button
+          onClick={() => confirmBill().then((hasSucceeded) => hasSucceeded && onBillChanged())}
+          disabled={isConfirming}
+          className="mt-8 w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
+        >
           Confirmar e abrir conta
         </button>
       )}
