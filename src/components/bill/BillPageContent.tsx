@@ -23,7 +23,9 @@ export function BillPageContent({ billId }: { billId: string }) {
     });
   }, [bill, hasTriedToJoin, billId, joinBill, reloadBill]);
 
-  if (isLoading || !bill) return <p>Carregando...</p>;
+  if (isLoading || !bill) {
+    return <p className="max-w-md mx-auto px-4 py-16 text-center font-body text-ink-muted">Carregando...</p>;
+  }
 
   if (bill.isOwner) {
     return <OwnerBillEditor bill={bill} items={items} onBillChanged={reloadBill} />;
