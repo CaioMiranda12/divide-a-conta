@@ -1,43 +1,27 @@
 'use client';
 
 import { useBillDetail } from '@/hooks/useBillDetail';
-import { useJoinBill } from '@/hooks/useJoinBill';
-import { useEffect, useState } from 'react';
 import { OwnerBillEditor } from '@/components/bill/OwnerBillEditor';
-import { ParticipantBillView } from '@/components/bill/ParticipantBillView';
-import { WaitingForOwnerView } from '@/components/bill/WaitingForOwnerView';
+import { BillProcessingState } from '@/components/bill/BillProcessingState';
 
 export function BillPageContent({ billId }: { billId: string }) {
-  const { bill, items, isLoading, reloadBill } = useBillDetail({ billId });
-  const { joinBill, errorCode: joinErrorCode } = useJoinBill();
-  const [hasTriedToJoin, setHasTriedToJoin] = useState(false);
+  const { bill, items, participants, isLoading, errorCode, reloadBill } = useBillDetail({ billId });
 
-  useEffect(() => {
-    const shouldTryToJoin = bill && !bill.isOwner && bill.status === 'open' && !hasTriedToJoin;
-
-    if (!shouldTryToJoin) return;
-
-    setHasTriedToJoin(true);
-    joinBill({ billId }).then((hasSucceeded) => {
-      if (hasSucceeded) reloadBill();
-    });
-  }, [bill, hasTriedToJoin, billId, joinBill, reloadBill]);
-
-  if (isLoading || !bill) {
+  if (isLoading) {
     return <p className="max-w-md mx-auto px-4 py-16 text-center font-body text-ink-muted">Carregando...</p>;
   }
 
-  if (bill.isOwner) {
-    return <OwnerBillEditor bill={bill} items={items} onBillChanged={reloadBill} />;
+  if (errorCode === 'forbidden') {
+    return <p className="max-w-md mx-auto px-4 py-16 text-center font-body text-stamp">Você não tem acesso a essa conta.</p>;
   }
 
-  const isBillOpen = bill.status === 'open';
+  if (!bill) {
+    return <p className="max-w-md mx-auto px-4 py-16 text-center font-body text-stamp">Conta não encontrada.</p>;
+  }
 
-  if (!isBillOpen) return <WaitingForOwnerView status={bill.status} />;
+  const isProcessingOrFailed = bill.status === 'processing' || bill.status === 'failed';
 
-  const hasFailedToJoin = Boolean(joinErrorCode) && joinErrorCode !== 'bill_not_open';
+  if (isProcessingOrFailed) return <BillProcessingState status={bill.status} />;
 
-  if (hasFailedToJoin) return <p>Não foi possível entrar nessa conta.</p>;
-
-  return <ParticipantBillView billId={billId} items={items} />;
+  return <OwnerBillEditor bill={bill} items={items} participants={participants} onBillChanged={reloadBill} />;
 }

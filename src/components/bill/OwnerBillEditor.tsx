@@ -1,23 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import type { ApiBillDetail, ApiBillItem } from '@/types/api';
+import Link from 'next/link';
+import type { ApiBillDetail, ApiBillItem, ApiBillParticipant } from '@/types/api';
 import type { EditableBillItem } from '@/types/billEditor';
 import { useUpdateBillItems } from '@/hooks/useUpdateBillItems';
 import { useConfirmBill } from '@/hooks/useConfirmBill';
 import { BillItemRow } from '@/components/bill/BillItemRow';
-import { BillSummaryPanel } from '@/components/bill/BillSummaryPanel';
+import { DinerSplitEditor } from '@/components/bill/DinerSplitEditor';
+import { MoneyInput } from '@/components/form/MoneyInput';
 import { generateTempId } from '@/utils/generateTempId';
+
+type EditorStep = 'items' | 'split';
 
 export function OwnerBillEditor({
   bill,
   items,
+  participants,
   onBillChanged,
 }: {
   bill: ApiBillDetail;
   items: ApiBillItem[];
+  participants: ApiBillParticipant[];
   onBillChanged: () => void;
 }) {
+  const [step, setStep] = useState<EditorStep>(bill.status === 'open' ? 'split' : 'items');
   const [restaurantName, setRestaurantName] = useState(bill.restaurantName ?? '');
   const [totalAmountInCents, setTotalAmountInCents] = useState(bill.totalAmountInCents);
   const [serviceFeePercent, setServiceFeePercent] = useState(bill.serviceFeePercent);
@@ -27,23 +34,12 @@ export function OwnerBillEditor({
   const { confirmBill, isConfirming } = useConfirmBill({ billId: bill.id });
 
   const isDraft = bill.status === 'draft';
-  const canEditItems = bill.status === 'draft' || bill.status === 'open';
 
-  async function persistChanges({
-    nextItems,
-    nextRestaurantName,
-    nextTotalAmountInCents,
-    nextServiceFeePercent,
-  }: {
-    nextItems: EditableBillItem[];
-    nextRestaurantName: string;
-    nextTotalAmountInCents: number;
-    nextServiceFeePercent: number;
-  }) {
-    const savedItems = await updateBillItems({
-      restaurantName: nextRestaurantName || null,
-      totalAmountInCents: nextTotalAmountInCents,
-      serviceFeePercent: nextServiceFeePercent,
+  async function persistChanges({ nextItems }: { nextItems: EditableBillItem[] }) {
+    await updateBillItems({
+      restaurantName: restaurantName || null,
+      totalAmountInCents,
+      serviceFeePercent,
       items: nextItems.map((item) => ({
         description: item.description,
         priceInCents: item.priceInCents,
@@ -51,9 +47,7 @@ export function OwnerBillEditor({
       })),
     });
 
-    const hasSucceeded = Boolean(savedItems);
-
-    if (hasSucceeded) onBillChanged();
+    onBillChanged();
   }
 
   function updateItemField({
@@ -70,109 +64,117 @@ export function OwnerBillEditor({
     );
   }
 
-  function handleItemBlur({ itemId }: { itemId: string }) {
-    persistChanges({
-      nextItems: editableItems,
-      nextRestaurantName: restaurantName,
-      nextTotalAmountInCents: totalAmountInCents,
-      nextServiceFeePercent: serviceFeePercent,
-    });
+  function handleItemBlur() {
+    persistChanges({ nextItems: editableItems });
   }
 
   function addItem() {
-    const newItem: EditableBillItem = {
-      id: generateTempId(),
-      description: '',
-      priceInCents: 0,
-      quantity: 1,
-    };
-
-    const nextItems = [...editableItems, newItem];
-
-    setEditableItems(nextItems);
+    setEditableItems((currentItems) => [
+      ...currentItems,
+      { id: generateTempId(), description: '', priceInCents: 0, quantity: 1 },
+    ]);
   }
 
   function removeItem({ itemId }: { itemId: string }) {
     const nextItems = editableItems.filter((item) => item.id !== itemId);
 
     setEditableItems(nextItems);
-    persistChanges({
-      nextItems,
-      nextRestaurantName: restaurantName,
-      nextTotalAmountInCents: totalAmountInCents,
-      nextServiceFeePercent: serviceFeePercent,
-    });
+    persistChanges({ nextItems });
   }
 
   function handleHeaderFieldBlur() {
-    persistChanges({
-      nextItems: editableItems,
-      nextRestaurantName: restaurantName,
-      nextTotalAmountInCents: totalAmountInCents,
-      nextServiceFeePercent: serviceFeePercent,
-    });
+    persistChanges({ nextItems: editableItems });
+  }
+
+  async function goToSplitStep() {
+    const shouldConfirmFirst = isDraft;
+
+    if (shouldConfirmFirst) {
+      const hasSucceeded = await confirmBill();
+
+      if (!hasSucceeded) return;
+
+      onBillChanged();
+    }
+
+    setStep('split');
   }
 
   return (
     <div className="max-w-md mx-auto px-4 py-8">
-      <input
-        value={restaurantName}
-        onChange={(event) => setRestaurantName(event.target.value)}
-        onBlur={handleHeaderFieldBlur}
-        placeholder="Nome do restaurante"
-        disabled={!canEditItems}
-        className="w-full bg-transparent font-display text-2xl tracking-wide focus:outline-none placeholder:text-ink-muted disabled:text-ink-muted"
-      />
+      <div className="flex items-center justify-between mb-6">
+        <Link href="/" className="text-sm font-body text-ink-muted hover:text-ink">
+          ← Minhas contas
+        </Link>
 
-      <div className="mt-6">
-        {editableItems.map((item) => (
-          <BillItemRow
-            key={item.id}
-            item={item}
-            isEditable={canEditItems}
-            onFieldChange={(field, value) => updateItemField({ itemId: item.id, field, value })}
-            onBlur={() => handleItemBlur({ itemId: item.id })}
-            onRemove={() => removeItem({ itemId: item.id })}
-          />
-        ))}
+        {step === 'split' && (
+          <button onClick={() => setStep('items')} className="text-sm font-body text-ink-muted hover:text-ink">
+            Editar itens
+          </button>
+        )}
       </div>
 
-      {canEditItems && (
-        <button
-          onClick={addItem}
-          className="mt-3 text-sm font-body text-confirmed hover:text-stamp"
-        >
-          + adicionar item
-        </button>
+      {step === 'items' ? (
+        <>
+          <input
+            value={restaurantName}
+            onChange={(event) => setRestaurantName(event.target.value)}
+            onBlur={handleHeaderFieldBlur}
+            placeholder="Nome do restaurante"
+            className="w-full bg-transparent font-display text-2xl tracking-wide focus:outline-none placeholder:text-ink-muted"
+          />
+
+          <div className="mt-6">
+            {editableItems.map((item) => (
+              <BillItemRow
+                key={item.id}
+                item={item}
+                isEditable
+                onFieldChange={(field, value) => updateItemField({ itemId: item.id, field, value })}
+                onBlur={handleItemBlur}
+                onRemove={() => removeItem({ itemId: item.id })}
+              />
+            ))}
+          </div>
+
+          <button onClick={addItem} className="mt-3 text-sm font-body text-confirmed hover:text-stamp">
+            + adicionar item
+          </button>
+
+          <label className="mt-6 flex items-center justify-between font-body text-sm">
+            Taxa de serviço (%)
+            <input
+              type="number"
+              value={serviceFeePercent}
+              onChange={(event) => setServiceFeePercent(Number(event.target.value))}
+              onBlur={handleHeaderFieldBlur}
+              className="w-16 bg-transparent font-money text-right tabular-nums focus:outline-none border-b border-paper-line"
+            />
+          </label>
+
+          <label className="mt-3 flex items-center justify-between font-body text-sm">
+            Total da conta
+            <MoneyInput
+              valueInCents={totalAmountInCents}
+              onChangeInCents={setTotalAmountInCents}
+              onBlur={handleHeaderFieldBlur}
+              className="w-24 bg-transparent font-money text-right tabular-nums focus:outline-none border-b border-paper-line"
+            />
+          </label>
+
+          {isSubmitting && <span className="block mt-2 text-xs font-body text-ink-muted">Salvando...</span>}
+
+          <button
+            onClick={goToSplitStep}
+            disabled={isConfirming || editableItems.length === 0}
+            className="mt-8 w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
+          >
+            {isConfirming ? 'Abrindo...' : 'Dividir a conta →'}
+          </button>
+        </>
+      ) : (
+        <DinerSplitEditor billId={bill.id} items={items} participants={participants} onChanged={onBillChanged} />
       )}
-
-      <label className="mt-6 flex items-center justify-between font-body text-sm">
-        Taxa de serviço (%)
-        <input
-          type="number"
-          value={serviceFeePercent}
-          onChange={(event) => setServiceFeePercent(Number(event.target.value))}
-          onBlur={handleHeaderFieldBlur}
-          disabled={!canEditItems}
-          className="w-16 bg-transparent font-money text-right tabular-nums focus:outline-none disabled:text-ink-muted border-b border-paper-line"
-        />
-      </label>
-
-      {isSubmitting && (
-        <span className="block mt-2 text-xs font-body text-ink-muted">Salvando...</span>
-      )}
-
-      {isDraft && (
-        <button
-          onClick={() => confirmBill().then((hasSucceeded) => hasSucceeded && onBillChanged())}
-          disabled={isConfirming}
-          className="mt-8 w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
-        >
-          Confirmar e abrir conta
-        </button>
-      )}
-
-      {bill.status === 'open' && <BillSummaryPanel billId={bill.id} />}
     </div>
   );
 }
