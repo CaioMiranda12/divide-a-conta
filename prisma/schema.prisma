@@ -60,16 +60,17 @@ model BillItem {
 }
 
 model Participant {
-  id        String   @id @default(uuid())
-  billId    String   @map("bill_id")
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
+  id          String   @id @default(uuid())
+  billId      String   @map("bill_id")
+  displayName String   @map("display_name")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   bill   Bill        @relation(fields: [billId], references: [id], onDelete: Cascade)
-  user   User        @relation(fields: [userId], references: [id])
   claims ItemClaim[]
+  user   User?       @relation(fields: [userId], references: [id])
+  userId String?
 
-  @@unique([billId, userId])
+  @@unique([billId, displayName])
   @@map("participants")
 }
 
