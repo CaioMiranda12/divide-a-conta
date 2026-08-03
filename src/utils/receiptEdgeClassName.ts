@@ -1,0 +1,2 @@
+export const RECEIPT_TOP_EDGE_CLASS_NAME =
+  "before:content-[''] before:block before:h-3 before:w-full before:bg-[radial-gradient(circle,_var(--color-paper)_60%,_transparent_61%)] before:bg-[length:16px_16px] before:bg-repeat-x before:-mb-px";
