@@ -3,35 +3,33 @@
 import { useState } from 'react';
 import { apiFetch, ApiError } from '@/lib/api/apiClient';
 import type { ApiUser } from '@/types/api';
+import type { RegisterFormValues } from '@/schemas/auth';
 
 export function useRegister() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[] | undefined>>({});
 
-  async function register({
-    name,
-    email,
-    password,
-  }: {
-    name: string;
-    email: string;
-    password: string;
-  }): Promise<ApiUser | null> {
+  async function register(values: RegisterFormValues): Promise<ApiUser | null> {
     setIsSubmitting(true);
     setErrorCode(null);
+    setFieldErrors({});
 
     try {
       const { user } = await apiFetch<{ user: ApiUser }>({
         path: '/auth/register',
         method: 'POST',
-        body: { name, email, password },
+        body: values,
       });
 
       return user;
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : 'unknown_error';
-
-      setErrorCode(code);
+      if (error instanceof ApiError) {
+        setErrorCode(error.code);
+        setFieldErrors(error.fieldErrors ?? {});
+      } else {
+        setErrorCode('unknown_error');
+      }
 
       return null;
     } finally {
@@ -39,5 +37,5 @@ export function useRegister() {
     }
   }
 
-  return { register, isSubmitting, errorCode };
+  return { register, isSubmitting, errorCode, fieldErrors };
 }
