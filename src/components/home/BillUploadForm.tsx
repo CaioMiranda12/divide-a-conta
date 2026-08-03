@@ -53,7 +53,7 @@ export function BillUploadForm({ onBillCreated }: { onBillCreated: (params: { bi
         disabled={isSubmitting || !selectedImage}
         className="mt-4 w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
       >
-        {isSubmitting ? 'Processando...' : 'Criar conta'}
+        {isSubmitting ? 'Processando...' : 'Adicionar conta'}
       </button>
     </form>
   );
