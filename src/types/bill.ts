@@ -1,6 +1,6 @@
 import type { BillStatus } from '@/generated/prisma/client';
 
-export type BillWithOwnership = {
+export type BillDetail = {
   id: string;
   userId: string;
   imageUrl: string;
@@ -9,7 +9,20 @@ export type BillWithOwnership = {
   serviceFeePercent: number;
   status: BillStatus;
   createdAt: Date;
-  isOwner: boolean;
+};
+
+export type BillItemWithClaims = {
+  id: string;
+  billId: string;
+  description: string;
+  priceInCents: number;
+  quantity: number;
+  claims: { participantId: string; splitCount: number }[];
+};
+
+export type BillParticipant = {
+  id: string;
+  displayName: string;
 };
 
 export type BillListItem = {

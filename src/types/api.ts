@@ -1,24 +1,12 @@
 import type { BillStatus } from '@/generated/prisma/client';
 
-export type ApiUser = {
-  id: string;
-  name: string;
-  email: string;
-};
+export type ApiUser = { id: string; name: string; email: string };
 
 export type ApiBillListItem = {
   id: string;
   restaurantName: string | null;
   status: BillStatus;
   createdAt: string;
-};
-
-export type ApiBillItem = {
-  id: string;
-  billId: string;
-  description: string;
-  priceInCents: number;
-  quantity: number;
 };
 
 export type ApiBillDetail = {
@@ -30,8 +18,20 @@ export type ApiBillDetail = {
   serviceFeePercent: number;
   status: BillStatus;
   createdAt: string;
-  isOwner: boolean;
 };
+
+export type ApiBillItemClaim = { participantId: string; splitCount: number };
+
+export type ApiBillItem = {
+  id: string;
+  billId: string;
+  description: string;
+  priceInCents: number;
+  quantity: number;
+  claims: ApiBillItemClaim[];
+};
+
+export type ApiBillParticipant = { id: string; displayName: string };
 
 export type ApiBillSummaryParticipant = {
   participantId: string;
