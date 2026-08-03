@@ -26,7 +26,7 @@ export async function getBillSummary({ billId }: { billId: string }) {
 
   const participants = bill.participants.map((participant) => ({
     id: participant.id,
-    displayName: participant.user.name,
+    displayName: participant.displayName,
   }));
 
   const { participants: participantsSummary, hasUnclaimedItems } = calculateBillSummary({

@@ -1,16 +1,14 @@
 import { prisma } from '@/lib/db/prisma';
 import { verifyBillOwnership } from '@/services/bill/verifyBillOwnership';
 import { BillNotFoundError } from '@/lib/errors/billErrors';
-import { BillItemNotFoundError } from '@/lib/errors/itemClaimErrors';
+import { ParticipantNotFoundError } from '@/lib/errors/participantErrors';
 
-export async function unclaimItem({
+export async function deleteParticipant({
   billId,
-  billItemId,
   participantId,
   currentUserId,
 }: {
   billId: string;
-  billItemId: string;
   participantId: string;
   currentUserId: string;
 }): Promise<void> {
@@ -20,9 +18,9 @@ export async function unclaimItem({
 
   verifyBillOwnership({ billOwnerId: bill.userId, currentUserId });
 
-  const billItem = await prisma.billItem.findFirst({ where: { id: billItemId, billId } });
+  const participant = await prisma.participant.findFirst({ where: { id: participantId, billId } });
 
-  if (!billItem) throw new BillItemNotFoundError();
+  if (!participant) throw new ParticipantNotFoundError();
 
-  await prisma.itemClaim.deleteMany({ where: { billItemId, participantId } });
+  await prisma.participant.delete({ where: { id: participantId } });
 }

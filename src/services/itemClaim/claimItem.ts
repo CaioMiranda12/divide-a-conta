@@ -1,40 +1,39 @@
 import { prisma } from '@/lib/db/prisma';
-import { BillNotFoundError, BillNotOpenError } from '@/lib/errors/billErrors';
+import { verifyBillOwnership } from '@/services/bill/verifyBillOwnership';
+import { BillNotFoundError } from '@/lib/errors/billErrors';
 import { BillItemNotFoundError } from '@/lib/errors/itemClaimErrors';
 import { ParticipantNotFoundError } from '@/lib/errors/participantErrors';
 
 export async function claimItem({
   billId,
   billItemId,
+  participantId,
   splitCount,
-  userId,
+  currentUserId,
 }: {
   billId: string;
   billItemId: string;
+  participantId: string;
   splitCount: number;
-  userId: string;
+  currentUserId: string;
 }): Promise<void> {
   const bill = await prisma.bill.findUnique({ where: { id: billId } });
 
   if (!bill) throw new BillNotFoundError();
 
-  const isOpen = bill.status === 'open';
-
-  if (!isOpen) throw new BillNotOpenError();
+  verifyBillOwnership({ billOwnerId: bill.userId, currentUserId });
 
   const billItem = await prisma.billItem.findFirst({ where: { id: billItemId, billId } });
 
   if (!billItem) throw new BillItemNotFoundError();
 
-  const participant = await prisma.participant.findUnique({
-    where: { billId_userId: { billId, userId } },
-  });
+  const participant = await prisma.participant.findFirst({ where: { id: participantId, billId } });
 
   if (!participant) throw new ParticipantNotFoundError();
 
   await prisma.itemClaim.upsert({
-    where: { billItemId_participantId: { billItemId, participantId: participant.id } },
-    create: { billItemId, participantId: participant.id, splitCount },
+    where: { billItemId_participantId: { billItemId, participantId } },
+    create: { billItemId, participantId, splitCount },
     update: { splitCount },
   });
 }
