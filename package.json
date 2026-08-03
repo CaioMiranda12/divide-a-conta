@@ -11,6 +11,7 @@
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "bcrypt": "^6.0.0",
+    "http-status-codes": "^2.3.0",
     "jose": "^6.2.7",
     "next": "15.5.22",
     "pg": "^8.22.0",
