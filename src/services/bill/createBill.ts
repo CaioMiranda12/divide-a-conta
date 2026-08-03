@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/db/prisma';
 import { uploadBillImage } from '@/lib/storage/uploadBillImage';
 import { extractItemsFromImage } from '@/lib/ai/extractItemsFromImage';
-import { ImageRequiredError, OcrFailedError } from '@/lib/errors/billErrors';
+import {
+  ImageRequiredError,
+  ImageNotAReceiptError,
+  OcrFailedError,
+} from '@/lib/errors/billErrors';
 
 export async function createBill({
   userId,
@@ -26,6 +30,12 @@ export async function createBill({
     await prisma.bill.update({ where: { id: bill.id }, data: { status: 'failed' } });
 
     throw new OcrFailedError();
+  }
+
+  if (!extractedBill.looksLikeReceipt) {
+    await prisma.bill.update({ where: { id: bill.id }, data: { status: 'failed' } });
+
+    throw new ImageNotAReceiptError();
   }
 
   await prisma.bill.update({

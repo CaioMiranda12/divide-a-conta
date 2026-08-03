@@ -39,3 +39,9 @@ export class OcrFailedError extends Error {
     super('ocr_failed');
   }
 }
+
+export class ImageNotAReceiptError extends Error {
+  constructor() {
+    super('image_not_a_receipt');
+  }
+}

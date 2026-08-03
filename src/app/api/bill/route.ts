@@ -5,7 +5,7 @@ import { createBill } from '@/services/bill/createBill';
 import { listBillsForUser } from '@/services/bill/listBillsForUser';
 import { checkBillUploadRateLimit } from '@/lib/ratelimit';
 import { UnauthenticatedError } from '@/lib/errors/authErrors';
-import { ImageRequiredError, OcrFailedError } from '@/lib/errors/billErrors';
+import { ImageNotAReceiptError, ImageRequiredError, OcrFailedError } from '@/lib/errors/billErrors';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,6 +34,10 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof OcrFailedError) {
       return NextResponse.json({ error: 'ocr_failed' }, { status: StatusCodes.UNPROCESSABLE_ENTITY });
+    }
+
+    if (error instanceof ImageNotAReceiptError) {
+      return NextResponse.json({ error: 'image_not_a_receipt' }, { status: StatusCodes.UNPROCESSABLE_ENTITY });
     }
 
     throw error;
