@@ -1,7 +1,7 @@
 'use client';
 
 import type { EditableBillItem } from '@/types/billEditor';
-import { centsToDisplayValue, displayValueToCents } from '@/utils/currency';
+import { MoneyInput } from '@/components/form/MoneyInput';
 
 export function BillItemRow({
   item,
@@ -27,14 +27,11 @@ export function BillItemRow({
         className="flex-1 bg-transparent font-body text-sm focus:outline-none disabled:text-ink-muted"
       />
 
-      <input
-        value={centsToDisplayValue({ amountInCents: item.priceInCents })}
-        onChange={(event) =>
-          onFieldChange('priceInCents', displayValueToCents({ displayValue: event.target.value }))
-        }
+      <MoneyInput
+        valueInCents={item.priceInCents}
+        onChangeInCents={(amountInCents) => onFieldChange('priceInCents', amountInCents)}
         onBlur={onBlur}
         disabled={!isEditable}
-        placeholder="0.00"
         className="w-20 bg-transparent font-money text-sm text-right tabular-nums focus:outline-none disabled:text-ink-muted"
       />
 
@@ -49,10 +46,7 @@ export function BillItemRow({
       />
 
       {isEditable && (
-        <button
-          onClick={onRemove}
-          className="text-stamp text-sm font-body hover:text-stamp-dark shrink-0"
-        >
+        <button onClick={onRemove} className="text-stamp text-sm font-body hover:text-stamp-dark shrink-0">
           remover
         </button>
       )}
