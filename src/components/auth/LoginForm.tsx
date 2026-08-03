@@ -42,43 +42,65 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>{isRegisterMode ? 'Criar conta' : 'Entrar'}</h1>
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm">
+        <h1 className="font-display text-2xl tracking-wide mb-1">
+          {isRegisterMode ? 'Criar conta' : 'Entrar'}
+        </h1>
+        <p className="font-money text-xs text-ink-muted mb-6">divide a conta</p>
 
-      {isRegisterMode && (
-        <input
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="Nome"
-          required
-        />
-      )}
+        <div className="space-y-3">
+          {isRegisterMode && (
+            <input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Nome"
+              required
+              className="w-full bg-transparent border-b border-paper-line py-2 font-body text-sm focus:outline-none focus:border-ink"
+            />
+          )}
 
-      <input
-        type="email"
-        value={email}
-        onChange={(event) => setEmail(event.target.value)}
-        placeholder="E-mail"
-        required
-      />
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="E-mail"
+            required
+            className="w-full bg-transparent border-b border-paper-line py-2 font-body text-sm focus:outline-none focus:border-ink"
+          />
 
-      <input
-        type="password"
-        value={password}
-        onChange={(event) => setPassword(event.target.value)}
-        placeholder="Senha"
-        required
-      />
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Senha"
+            required
+            className="w-full bg-transparent border-b border-paper-line py-2 font-body text-sm focus:outline-none focus:border-ink"
+          />
+        </div>
 
-      {errorCode && <p>{AUTH_ERROR_MESSAGES[errorCode] ?? AUTH_ERROR_MESSAGES.unknown_error}</p>}
+        {errorCode && (
+          <p className="mt-3 text-sm font-body text-stamp">
+            {AUTH_ERROR_MESSAGES[errorCode] ?? AUTH_ERROR_MESSAGES.unknown_error}
+          </p>
+        )}
 
-      <button type="submit" disabled={isSubmitting}>
-        {isRegisterMode ? 'Criar conta' : 'Entrar'}
-      </button>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="mt-6 w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
+        >
+          {isRegisterMode ? 'Criar conta' : 'Entrar'}
+        </button>
 
-      <button type="button" onClick={() => setMode(isRegisterMode ? 'login' : 'register')}>
-        {isRegisterMode ? 'Já tenho conta' : 'Criar conta'}
-      </button>
-    </form>
+        <button
+          type="button"
+          onClick={() => setMode(isRegisterMode ? 'login' : 'register')}
+          className="mt-4 w-full text-sm font-body text-ink-muted hover:text-ink"
+        >
+          {isRegisterMode ? 'Já tenho conta' : 'Criar conta'}
+        </button>
+      </form>
+    </div>
   );
 }

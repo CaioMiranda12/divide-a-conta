@@ -14,20 +14,26 @@ export function HomePageContent({ userName }: { userName: string }) {
   }
 
   return (
-    <div>
-      <h1>Olá, {userName}</h1>
+    <div className="max-w-md mx-auto px-4 py-8">
+      <h1 className="font-display text-2xl tracking-wide">Olá, {userName}</h1>
 
-      <BillUploadForm onBillCreated={handleBillCreated} />
+      <div className="mt-6">
+        <BillUploadForm onBillCreated={handleBillCreated} />
+      </div>
 
-      <h2>Suas contas</h2>
+      <h2 className="font-display text-lg tracking-wide mt-10 mb-3">Suas contas</h2>
 
-      {isLoading && <p>Carregando...</p>}
+      {isLoading && <p className="font-body text-sm text-ink-muted">Carregando...</p>}
 
-      {!isLoading && bills.length === 0 && <p>Nenhuma conta ainda.</p>}
+      {!isLoading && bills.length === 0 && (
+        <p className="font-body text-sm text-ink-muted">Nenhuma conta ainda.</p>
+      )}
 
-      {bills.map((bill) => (
-        <BillListItemCard key={bill.id} bill={bill} />
-      ))}
+      <div className="space-y-2">
+        {bills.map((bill) => (
+          <BillListItemCard key={bill.id} bill={bill} />
+        ))}
+      </div>
     </div>
   );
 }
