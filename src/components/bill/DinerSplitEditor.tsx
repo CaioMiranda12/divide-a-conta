@@ -8,6 +8,7 @@ import { useItemClaim } from '@/hooks/useItemClaim';
 import { useCloseBill } from '@/hooks/useCloseBill';
 import { centsToDisplayValue } from '@/utils/currency';
 import { BillSummaryPanel } from '@/components/bill/BillSummaryPanel';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 const DEFAULT_SPLIT_COUNT = 1;
 
@@ -26,6 +27,7 @@ export function DinerSplitEditor({
 }) {
   const [newDinerName, setNewDinerName] = useState('');
   const [isSummaryVisible, setIsSummaryVisible] = useState(true);
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
 
   const { createParticipant, isSubmitting: isCreatingDiner, errorCode: createDinerErrorCode } = useCreateParticipant({ billId });
   const { deleteParticipant } = useDeleteParticipant({ billId });
@@ -71,8 +73,10 @@ export function DinerSplitEditor({
     if (hasSucceeded) onChanged();
   }
 
-  async function handleCloseBill() {
+  async function handleConfirmCloseBill() {
     const hasSucceeded = await closeBill();
+
+    setIsCloseDialogOpen(false);
 
     if (hasSucceeded) onChanged();
   }
@@ -179,13 +183,23 @@ export function DinerSplitEditor({
 
       {isOpen && (
         <button
-          onClick={handleCloseBill}
-          disabled={isClosing || hasNoDiners}
+          onClick={() => setIsCloseDialogOpen(true)}
+          disabled={hasNoDiners}
           className="mt-4 w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
         >
-          {isClosing ? 'Fechando...' : 'Fechar conta'}
+          Fechar conta
         </button>
       )}
+
+      <ConfirmDialog
+        isOpen={isCloseDialogOpen}
+        title="Fechar conta"
+        description="Depois de fechada, não é mais possível adicionar pessoas ou alterar quem pegou cada item. Quer continuar?"
+        confirmLabel="Fechar conta"
+        isConfirming={isClosing}
+        onConfirm={handleConfirmCloseBill}
+        onCancel={() => setIsCloseDialogOpen(false)}
+      />
     </div>
   );
 }
