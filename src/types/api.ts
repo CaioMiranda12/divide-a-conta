@@ -40,8 +40,19 @@ export type ApiBillSummaryParticipant = {
   items: { billItemId: string; description: string; amountInCents: number }[];
 };
 
+export type ApiBillDebt = {
+  participantId: string;
+  displayName: string;
+  amountOwedInCents: number;
+};
+
+export type ApiBillPayer = { participantId: string; displayName: string };
+
 export type ApiBillSummary = {
   bill: { id: string; restaurantName: string | null; totalAmountInCents: number };
   participants: ApiBillSummaryParticipant[];
   hasUnclaimedItems: boolean;
+  payer: ApiBillPayer | null;
+  debts: ApiBillDebt[];
 };
+
