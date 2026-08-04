@@ -85,12 +85,14 @@ export function DinerSplitEditor({
     if (hasSucceeded) onChanged();
   }
 
-  async function handleSetPayer({ participantId }: { participantId: string }) {
-    const hasSucceeded = await setBillPayer({ participantId });
+  async function handleTogglePayer({ participantId }: { participantId: string }) {
+    const isAlreadyPayer = billPayerParticipantId === participantId;
+    const nextParticipantId = isAlreadyPayer ? null : participantId;
+
+    const hasSucceeded = await setBillPayer({ participantId: nextParticipantId });
 
     if (hasSucceeded) onChanged();
   }
-
   return (
     <div>
       <h1 className="font-display text-2xl tracking-wide mb-4">Quem comeu o quê</h1>
@@ -159,7 +161,7 @@ export function DinerSplitEditor({
               return (
                 <button
                   key={participant.id}
-                  onClick={() => handleSetPayer({ participantId: participant.id })}
+                  onClick={() => handleTogglePayer({ participantId: participant.id })}
                   disabled={isSettingPayer}
                   className={`text-xs font-body px-2.5 py-1 border transition-colors ${
                     isPayer
