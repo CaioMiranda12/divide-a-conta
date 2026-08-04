@@ -182,19 +182,25 @@ export function OwnerBillEditor({
               valueInCents={totalAmountInCents}
               onChangeInCents={setTotalAmountInCents}
               onBlur={handleHeaderFieldBlur}
-              className="w-24 bg-transparent font-money text-right tabular-nums focus:outline-none border-b border-paper-line"
+              className={`w-24 bg-transparent font-money text-right tabular-nums focus:outline-none border-b ${
+                hasMismatch ? 'border-pending' : 'border-paper-line'
+              }`}
             />
           </label>
 
-          {hasMismatch && (
-            <p className="mt-2 text-sm font-body text-pending">
-              {mismatchInCents > 0
-                ? `Faltam R$ ${centsToDisplayValue({ amountInCents: mismatchInCents })} nos itens para bater com o total.`
-                : `Os itens somam R$ ${centsToDisplayValue({ amountInCents: -mismatchInCents })} a mais que o total.`}
-            </p>
-          )}
+          <div className="mt-2 min-h-5 flex items-center justify-between">
+            <span className="text-xs font-body text-ink-muted">
+              {isSubmitting ? 'Salvando...' : ' '}
+            </span>
 
-          {isSubmitting && <span className="block mt-2 text-xs font-body text-ink-muted">Salvando...</span>}
+            {hasMismatch && (
+              <span className="text-xs font-money text-pending tabular-nums">
+                {mismatchInCents > 0
+                  ? `faltam R$ ${centsToDisplayValue({ amountInCents: mismatchInCents })}`
+                  : `R$ ${centsToDisplayValue({ amountInCents: -mismatchInCents })} a mais`}
+              </span>
+            )}
+          </div>
 
           <button
             onClick={handleDivideBillClick}
