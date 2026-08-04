@@ -9,7 +9,10 @@ import { useConfirmBill } from '@/hooks/useConfirmBill';
 import { BillItemRow } from '@/components/bill/BillItemRow';
 import { DinerSplitEditor } from '@/components/bill/DinerSplitEditor';
 import { MoneyInput } from '@/components/form/MoneyInput';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { generateTempId } from '@/utils/generateTempId';
+import { centsToDisplayValue } from '@/utils/currency';
+import { getBillTotalMismatchInCents } from '@/utils/billValidation';
 
 type EditorStep = 'items' | 'split';
 
@@ -29,11 +32,18 @@ export function OwnerBillEditor({
   const [totalAmountInCents, setTotalAmountInCents] = useState(bill.totalAmountInCents);
   const [serviceFeePercent, setServiceFeePercent] = useState(bill.serviceFeePercent);
   const [editableItems, setEditableItems] = useState<EditableBillItem[]>(items);
+  const [isMismatchDialogOpen, setIsMismatchDialogOpen] = useState(false);
 
   const { updateBillItems, isSubmitting } = useUpdateBillItems({ billId: bill.id });
   const { confirmBill, isConfirming } = useConfirmBill({ billId: bill.id });
 
   const isDraft = bill.status === 'draft';
+
+  const mismatchInCents = getBillTotalMismatchInCents({
+    items: editableItems,
+    totalAmountInCents,
+  });
+  const hasMismatch = mismatchInCents !== 0;
 
   async function persistChanges({ nextItems }: { nextItems: EditableBillItem[] }) {
     await updateBillItems({
@@ -86,7 +96,7 @@ export function OwnerBillEditor({
     persistChanges({ nextItems: editableItems });
   }
 
-  async function goToSplitStep() {
+  async function proceedToSplitStep() {
     const shouldConfirmFirst = isDraft;
 
     if (shouldConfirmFirst) {
@@ -98,6 +108,20 @@ export function OwnerBillEditor({
     }
 
     setStep('split');
+  }
+
+  function handleDivideBillClick() {
+    if (hasMismatch) {
+      setIsMismatchDialogOpen(true);
+      return;
+    }
+
+    proceedToSplitStep();
+  }
+
+  function handleConfirmDespiteMismatch() {
+    setIsMismatchDialogOpen(false);
+    proceedToSplitStep();
   }
 
   return (
@@ -162,15 +186,37 @@ export function OwnerBillEditor({
             />
           </label>
 
+          {hasMismatch && (
+            <p className="mt-2 text-sm font-body text-pending">
+              {mismatchInCents > 0
+                ? `Faltam R$ ${centsToDisplayValue({ amountInCents: mismatchInCents })} nos itens para bater com o total.`
+                : `Os itens somam R$ ${centsToDisplayValue({ amountInCents: -mismatchInCents })} a mais que o total.`}
+            </p>
+          )}
+
           {isSubmitting && <span className="block mt-2 text-xs font-body text-ink-muted">Salvando...</span>}
 
           <button
-            onClick={goToSplitStep}
+            onClick={handleDivideBillClick}
             disabled={isConfirming || editableItems.length === 0}
             className="mt-8 w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
           >
             {isConfirming ? 'Abrindo...' : 'Dividir a conta →'}
           </button>
+
+          <ConfirmDialog
+            isOpen={isMismatchDialogOpen}
+            title="Os valores não batem"
+            description={
+              mismatchInCents > 0
+                ? `A soma dos itens está R$ ${centsToDisplayValue({ amountInCents: mismatchInCents })} menor que o total da conta. Isso pode indicar um item faltando. Quer continuar mesmo assim?`
+                : `A soma dos itens está R$ ${centsToDisplayValue({ amountInCents: -mismatchInCents })} maior que o total da conta. Isso pode indicar um preço ou quantidade errados. Quer continuar mesmo assim?`
+            }
+            confirmLabel="Continuar mesmo assim"
+            isConfirming={false}
+            onConfirm={handleConfirmDespiteMismatch}
+            onCancel={() => setIsMismatchDialogOpen(false)}
+          />
         </>
       ) : (
         <DinerSplitEditor
