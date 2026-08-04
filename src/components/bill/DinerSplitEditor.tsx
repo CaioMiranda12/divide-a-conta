@@ -162,7 +162,9 @@ export function DinerSplitEditor({
                   onClick={() => handleSetPayer({ participantId: participant.id })}
                   disabled={isSettingPayer}
                   className={`text-xs font-body px-2.5 py-1 border transition-colors ${
-                    isPayer ? 'bg-ink text-paper border-ink' : 'border-paper-line text-ink-muted hover:border-ink'
+                    isPayer
+                      ? 'bg-confirmed text-paper border-confirmed'
+                      : 'border-paper-line text-ink-muted hover:border-ink'
                   }`}
                 >
                   {participant.displayName}
