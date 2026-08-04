@@ -7,6 +7,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
+  confirmingLabel,
   isConfirming,
   onConfirm,
   onCancel,
@@ -15,6 +16,7 @@ export function ConfirmDialog({
   title: string;
   description: string;
   confirmLabel: string;
+  confirmingLabel?: string;
   isConfirming: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -28,14 +30,12 @@ export function ConfirmDialog({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
           className="fixed inset-0 bg-ink/40 flex items-center justify-center px-4 z-50"
-          onClick={onCancel}
         >
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.15 }}
-            onClick={(event) => event.stopPropagation()}
             className="bg-paper border border-paper-line max-w-sm w-full p-5"
           >
             <h2 className="font-display text-lg tracking-wide">{title}</h2>
@@ -53,7 +53,7 @@ export function ConfirmDialog({
                 disabled={isConfirming}
                 className="flex-1 bg-stamp hover:bg-stamp-dark text-paper font-body text-sm py-2 disabled:opacity-60"
               >
-                {isConfirming ? 'Excluindo...' : confirmLabel}
+                {isConfirming ? (confirmingLabel ?? 'Aguarde...') : confirmLabel}
               </button>
             </div>
           </motion.div>

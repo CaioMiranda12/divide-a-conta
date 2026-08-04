@@ -196,6 +196,7 @@ export function DinerSplitEditor({
         title="Fechar conta"
         description="Depois de fechada, não é mais possível adicionar pessoas ou alterar quem pegou cada item. Quer continuar?"
         confirmLabel="Fechar conta"
+        confirmingLabel="Fechando..."
         isConfirming={isClosing}
         onConfirm={handleConfirmCloseBill}
         onCancel={() => setIsCloseDialogOpen(false)}

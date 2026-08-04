@@ -62,6 +62,7 @@ export function BillListItemCard({
         title="Excluir conta"
         description={`Tem certeza que quer excluir "${bill.restaurantName ?? 'essa conta'}"? Essa ação não pode ser desfeita.`}
         confirmLabel="Excluir"
+        confirmingLabel="Excluindo..."
         isConfirming={isDeleting}
         onConfirm={handleConfirmDelete}
         onCancel={() => setIsConfirmDialogOpen(false)}
