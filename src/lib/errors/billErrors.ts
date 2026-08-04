@@ -45,3 +45,9 @@ export class ImageNotAReceiptError extends Error {
     super('image_not_a_receipt');
   }
 }
+
+export class BillNotOpenForClosingError extends Error {
+  constructor() {
+    super('bill_not_open');
+  }
+}
