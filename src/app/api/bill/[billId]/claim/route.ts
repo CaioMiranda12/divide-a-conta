@@ -54,7 +54,7 @@ export async function POST(
   try {
     const currentUser = await requireCurrentUser();
 
-    await claimItem({ billId, userId: currentUser.id, ...parsedBody.data });
+    await claimItem({ billId, currentUserId: currentUser.id, ...parsedBody.data });
 
     return NextResponse.json({ status: 'claimed' }, { status: StatusCodes.OK });
   } catch (error) {
@@ -82,7 +82,7 @@ export async function DELETE(
   try {
     const currentUser = await requireCurrentUser();
 
-    await unclaimItem({ billId, userId: currentUser.id, ...parsedBody.data });
+    await unclaimItem({ billId, currentUserId: currentUser.id, ...parsedBody.data });
 
     return NextResponse.json({ status: 'unclaimed' }, { status: StatusCodes.OK });
   } catch (error) {
