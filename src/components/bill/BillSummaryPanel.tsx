@@ -77,6 +77,26 @@ export function BillSummaryPanel({ billId }: { billId: string }) {
             </div>
           ))}
         </div>
+        
+          {summary.payer && summary.debts.length > 0 && (
+          <div className="mt-5 pt-4 border-t border-dashed border-paper-line">
+            <p className="font-body text-sm font-semibold mb-2">
+              Deve para {summary.payer.displayName}
+            </p>
+
+            <ul className="space-y-1">
+              {summary.debts.map((debt) => (
+                <li key={debt.participantId} className="flex items-baseline justify-between font-money text-sm">
+                  <span>{debt.displayName}</span>
+                  <span className="tabular-nums">
+                    R$ {centsToDisplayValue({ amountInCents: debt.amountOwedInCents })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
       </div>
 
       {summary.hasUnclaimedItems && (
