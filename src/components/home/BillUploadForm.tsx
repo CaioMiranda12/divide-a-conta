@@ -71,7 +71,7 @@ export function BillUploadForm({ onBillCreated }: { onBillCreated: (params: { bi
           <img
             src={previewUrl}
             alt="Pré-visualização da nota fiscal selecionada"
-            className="w-full max-h-72 object-contain border border-paper-line"
+            className="w-full h-[70vh] sm:h-[28rem] object-contain border border-paper-line bg-ink/5"
           />
 
           <button
