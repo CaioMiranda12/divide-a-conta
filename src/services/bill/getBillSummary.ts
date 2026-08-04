@@ -1,3 +1,4 @@
+// src/services/bill/getBillSummary.ts
 import { prisma } from '@/lib/db/prisma';
 import { BillNotFoundError } from '@/lib/errors/billErrors';
 import { calculateBillSummary } from '@/lib/billing/calculateBillSummary';
@@ -35,6 +36,18 @@ export async function getBillSummary({ billId }: { billId: string }) {
     serviceFeePercent: bill.serviceFeePercent,
   });
 
+  const payerParticipant = bill.participants.find((participant) => participant.id === bill.paidByParticipantId);
+
+  const debts = payerParticipant
+    ? participantsSummary
+        .filter((participant) => participant.participantId !== payerParticipant.id)
+        .map((participant) => ({
+          participantId: participant.participantId,
+          displayName: participant.displayName,
+          amountOwedInCents: participant.amountInCents,
+        }))
+    : [];
+
   return {
     bill: {
       id: bill.id,
@@ -43,5 +56,9 @@ export async function getBillSummary({ billId }: { billId: string }) {
     },
     participants: participantsSummary,
     hasUnclaimedItems,
+    payer: payerParticipant
+      ? { participantId: payerParticipant.id, displayName: payerParticipant.displayName }
+      : null,
+    debts,
   };
 }
