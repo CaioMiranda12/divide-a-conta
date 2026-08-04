@@ -49,7 +49,7 @@ export function HomePageContent({ userName }: { userName: string }) {
 
       <div className="space-y-2">
         {bills.map((bill) => (
-          <BillListItemCard key={bill.id} bill={bill} />
+          <BillListItemCard key={bill.id} bill={bill} onDeleted={reloadBills} />
         ))}
       </div>
     </div>
