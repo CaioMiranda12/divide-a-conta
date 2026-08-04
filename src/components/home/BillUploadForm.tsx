@@ -1,9 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCreateBill } from '@/hooks/useCreateBill';
 import { ACCEPTED_IMAGE_MIME_TYPES } from '@/constants/upload';
-import { RECEIPT_TOP_EDGE_CLASS_NAME } from '@/utils/receiptEdgeClassName';
 
 const UPLOAD_ERROR_MESSAGES: Record<string, string> = {
   image_required: 'Selecione uma imagem para continuar.',
@@ -16,7 +15,32 @@ const UPLOAD_ERROR_MESSAGES: Record<string, string> = {
 export function BillUploadForm({ onBillCreated }: { onBillCreated: (params: { billId: string }) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { createBill, isSubmitting, errorCode } = useCreateBill();
+
+  useEffect(() => {
+    if (!selectedImage) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(selectedImage);
+    setPreviewUrl(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedImage]);
+
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setSelectedImage(event.target.files?.[0] ?? null);
+  }
+
+  function handleChooseAnotherImage() {
+    setSelectedImage(null);
+
+    if (inputRef.current) inputRef.current.value = '';
+
+    inputRef.current?.click();
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -31,16 +55,35 @@ export function BillUploadForm({ onBillCreated }: { onBillCreated: (params: { bi
   }
 
   return (
-    <form onSubmit={handleSubmit} className={`${RECEIPT_TOP_EDGE_CLASS_NAME} bg-paper border border-paper-line p-5`}>
+    <form onSubmit={handleSubmit} className="bg-paper border border-paper-line p-5">
       <label className="block font-body text-sm text-ink-muted mb-3">Foto da conta</label>
 
       <input
         ref={inputRef}
         type="file"
         accept={ACCEPTED_IMAGE_MIME_TYPES.join(',')}
-        onChange={(event) => setSelectedImage(event.target.files?.[0] ?? null)}
-        className="w-full font-body text-sm file:mr-3 file:border-0 file:bg-ink file:text-paper file:px-3 file:py-1.5 file:text-sm"
+        onChange={handleFileChange}
+        className={previewUrl ? 'hidden' : 'w-full font-body text-sm file:mr-3 file:border-0 file:bg-ink file:text-paper file:px-3 file:py-1.5 file:text-sm'}
       />
+
+      {previewUrl && (
+        <div>
+          <img
+            src={previewUrl}
+            alt="Pré-visualização da nota fiscal selecionada"
+            className="w-full max-h-72 object-contain border border-paper-line"
+          />
+
+          <button
+            type="button"
+            onClick={handleChooseAnotherImage}
+            disabled={isSubmitting}
+            className="mt-2 text-sm font-body text-ink-muted hover:text-ink disabled:opacity-60"
+          >
+            Escolher outra foto
+          </button>
+        </div>
+      )}
 
       {errorCode && (
         <p className="mt-3 text-sm font-body text-stamp">
