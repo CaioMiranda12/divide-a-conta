@@ -9,18 +9,21 @@ import { useCloseBill } from '@/hooks/useCloseBill';
 import { centsToDisplayValue } from '@/utils/currency';
 import { BillSummaryPanel } from '@/components/bill/BillSummaryPanel';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useSetBillPayer } from '@/hooks/useSetBillPayer';
 
 const DEFAULT_SPLIT_COUNT = 1;
 
 export function DinerSplitEditor({
   billId,
   billStatus,
+  billPayerParticipantId,
   items,
   participants,
   onChanged,
 }: {
   billId: string;
   billStatus: ApiBillDetail['status'];
+  billPayerParticipantId: string | null;
   items: ApiBillItem[];
   participants: ApiBillParticipant[];
   onChanged: () => void;
@@ -28,6 +31,7 @@ export function DinerSplitEditor({
   const [newDinerName, setNewDinerName] = useState('');
   const [isSummaryVisible, setIsSummaryVisible] = useState(true);
   const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
+  const { setBillPayer, isSubmitting: isSettingPayer } = useSetBillPayer({ billId });
 
   const { createParticipant, isSubmitting: isCreatingDiner, errorCode: createDinerErrorCode } = useCreateParticipant({ billId });
   const { deleteParticipant } = useDeleteParticipant({ billId });
@@ -77,6 +81,12 @@ export function DinerSplitEditor({
     const hasSucceeded = await closeBill();
 
     setIsCloseDialogOpen(false);
+
+    if (hasSucceeded) onChanged();
+  }
+
+  async function handleSetPayer({ participantId }: { participantId: string }) {
+    const hasSucceeded = await setBillPayer({ participantId });
 
     if (hasSucceeded) onChanged();
   }
@@ -135,6 +145,31 @@ export function DinerSplitEditor({
               )}
             </span>
           ))}
+        </div>
+      )}
+
+      {!hasNoDiners && isOpen && (
+        <div className="mb-6">
+          <p className="font-body text-sm text-ink-muted mb-2">Quem pagou a conta?</p>
+
+          <div className="flex flex-wrap gap-2">
+            {participants.map((participant) => {
+              const isPayer = billPayerParticipantId === participant.id;
+
+              return (
+                <button
+                  key={participant.id}
+                  onClick={() => handleSetPayer({ participantId: participant.id })}
+                  disabled={isSettingPayer}
+                  className={`text-xs font-body px-2.5 py-1 border transition-colors ${
+                    isPayer ? 'bg-ink text-paper border-ink' : 'border-paper-line text-ink-muted hover:border-ink'
+                  }`}
+                >
+                  {participant.displayName}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 

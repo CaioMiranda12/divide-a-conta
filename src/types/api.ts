@@ -17,6 +17,7 @@ export type ApiBillDetail = {
   totalAmountInCents: number;
   serviceFeePercent: number;
   status: BillStatus;
+  paidByParticipantId: string | null;
   createdAt: string;
 };
 
