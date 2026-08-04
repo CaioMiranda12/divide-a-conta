@@ -8,6 +8,7 @@ export type BillDetail = {
   totalAmountInCents: number;
   serviceFeePercent: number;
   status: BillStatus;
+  paidByParticipantId: string | null;
   createdAt: Date;
 };
 

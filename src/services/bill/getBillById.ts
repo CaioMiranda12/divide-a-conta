@@ -28,6 +28,7 @@ export async function getBillById({
       totalAmountInCents: bill.totalAmountInCents,
       serviceFeePercent: bill.serviceFeePercent,
       status: bill.status,
+      paidByParticipantId: bill.paidByParticipantId,
       createdAt: bill.createdAt,
     },
     items: bill.items.map((item) => ({
