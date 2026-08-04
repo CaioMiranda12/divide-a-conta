@@ -6,6 +6,7 @@ import {
   ImageNotAReceiptError,
   OcrFailedError,
 } from '@/lib/errors/billErrors';
+import { ACCEPTED_IMAGE_MIME_TYPES } from '@/constants/upload';
 
 export async function createBill({
   userId,
@@ -17,6 +18,10 @@ export async function createBill({
   const isFile = image instanceof File;
 
   if (!isFile) throw new ImageRequiredError();
+
+  const isAcceptedMimeType = ACCEPTED_IMAGE_MIME_TYPES.includes(image.type);
+
+  if (!isAcceptedMimeType) throw new ImageRequiredError();
 
   const imageUrl = await uploadBillImage({ image, userId });
 
