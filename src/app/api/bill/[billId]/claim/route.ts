@@ -6,7 +6,7 @@ import { unclaimItem } from '@/services/itemClaim/unclaimItem';
 import { claimItemSchema, unclaimItemSchema } from '@/schemas/itemClaim';
 import { isValidUuid } from '@/utils/uuid';
 import { UnauthenticatedError } from '@/lib/errors/authErrors';
-import { BillNotFoundError, BillNotOpenError } from '@/lib/errors/billErrors';
+import { BillNotFoundError, BillOwnershipError } from '@/lib/errors/billErrors';
 import { BillItemNotFoundError } from '@/lib/errors/itemClaimErrors';
 import { ParticipantNotFoundError } from '@/lib/errors/participantErrors';
 
@@ -24,11 +24,11 @@ function toErrorResponse(error: unknown) {
   }
 
   if (error instanceof ParticipantNotFoundError) {
-    return NextResponse.json({ error: 'participant_not_found' }, { status: StatusCodes.FORBIDDEN });
+    return NextResponse.json({ error: 'participant_not_found' }, { status: StatusCodes.NOT_FOUND });
   }
 
-  if (error instanceof BillNotOpenError) {
-    return NextResponse.json({ error: 'bill_not_open' }, { status: StatusCodes.CONFLICT });
+  if (error instanceof BillOwnershipError) {
+    return NextResponse.json({ error: 'forbidden' }, { status: StatusCodes.FORBIDDEN });
   }
 
   throw error;
