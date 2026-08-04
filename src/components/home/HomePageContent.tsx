@@ -2,20 +2,38 @@
 
 import { useRouter } from 'next/navigation';
 import { useBillList } from '@/hooks/useBillList';
+import { useLogout } from '@/hooks/useLogout';
 import { BillUploadForm } from '@/components/home/BillUploadForm';
 import { BillListItemCard } from '@/components/home/BillListItemCard';
 
 export function HomePageContent({ userName }: { userName: string }) {
   const router = useRouter();
   const { bills, isLoading, reloadBills } = useBillList();
+  const { logout, isLoggingOut } = useLogout();
 
   function handleBillCreated({ billId }: { billId: string }) {
     router.push(`/bill/${billId}`);
   }
 
+  async function handleLogout() {
+    const hasSucceeded = await logout();
+
+    if (hasSucceeded) router.push('/login');
+  }
+
   return (
     <div className="max-w-md mx-auto px-4 py-8">
-      <h1 className="font-display text-2xl tracking-wide">Olá, {userName}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-2xl tracking-wide">Olá, {userName}</h1>
+
+        <button
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="text-sm font-body text-ink-muted hover:text-stamp disabled:opacity-60"
+        >
+          Sair
+        </button>
+      </div>
 
       <div className="mt-6">
         <BillUploadForm onBillCreated={handleBillCreated} />
