@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db/prisma';
 import { verifyBillOwnership } from '@/services/bill/verifyBillOwnership';
 import { BillNotFoundError } from '@/lib/errors/billErrors';
-import { ParticipantNotFoundError } from '@/lib/errors/participantErrors';
+import { ParticipantNotFoundError, ParticipantIsPayerError } from '@/lib/errors/participantErrors';
 
 export async function deleteParticipant({
   billId,
@@ -21,6 +21,10 @@ export async function deleteParticipant({
   const participant = await prisma.participant.findFirst({ where: { id: participantId, billId } });
 
   if (!participant) throw new ParticipantNotFoundError();
+
+  const isCurrentPayer = bill.paidByParticipantId === participantId;
+
+  if (isCurrentPayer) throw new ParticipantIsPayerError();
 
   await prisma.participant.delete({ where: { id: participantId } });
 }
