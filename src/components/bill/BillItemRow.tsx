@@ -40,7 +40,13 @@ export function BillItemRow({
         min={1}
         value={item.quantity}
         onChange={(event) => onFieldChange('quantity', Number(event.target.value))}
-        onBlur={onBlur}
+        onBlur={() => {
+          const hasInvalidQuantity = item.quantity < 1;
+
+          if (hasInvalidQuantity) onFieldChange('quantity', 1);
+
+          onBlur();
+        }}
         disabled={!isEditable}
         className="w-12 bg-transparent font-money text-sm text-right tabular-nums focus:outline-none disabled:text-ink-muted"
       />
