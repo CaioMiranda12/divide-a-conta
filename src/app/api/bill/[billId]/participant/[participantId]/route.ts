@@ -8,6 +8,7 @@ import { UnauthenticatedError } from '@/lib/errors/authErrors';
 import { BillNotFoundError, BillOwnershipError } from '@/lib/errors/billErrors';
 import { BillItemNotFoundError } from '@/lib/errors/itemClaimErrors';
 import { ParticipantNotFoundError } from '@/lib/errors/participantErrors';
+import { deleteParticipant } from '@/services/participant/deleteParticipant';
 
 function toErrorResponse(error: unknown) {
   if (error instanceof UnauthenticatedError) {
@@ -59,24 +60,33 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ billId: string }> },
+  { params }: { params: Promise<{ billId: string; participantId: string }> },
 ) {
-  const { billId } = await params;
-
-  const body = await request.json();
-  const parsedBody = unclaimItemSchema.safeParse(body);
-
-  if (!parsedBody.success) {
-    return NextResponse.json({ error: 'invalid_body' }, { status: StatusCodes.BAD_REQUEST });
-  }
+  const { billId, participantId } = await params;
 
   try {
     const currentUser = await requireCurrentUser();
 
-    await unclaimItem({ billId, currentUserId: currentUser.id, ...parsedBody.data });
+    await deleteParticipant({ billId, participantId, currentUserId: currentUser.id });
 
-    return NextResponse.json({ status: 'unclaimed' }, { status: StatusCodes.OK });
+    return new NextResponse(null, { status: StatusCodes.NO_CONTENT });
   } catch (error) {
-    return toErrorResponse(error);
+    if (error instanceof UnauthenticatedError) {
+      return NextResponse.json({ error: 'unauthenticated' }, { status: StatusCodes.UNAUTHORIZED });
+    }
+
+    if (error instanceof BillNotFoundError) {
+      return NextResponse.json({ error: 'bill_not_found' }, { status: StatusCodes.NOT_FOUND });
+    }
+
+    if (error instanceof BillOwnershipError) {
+      return NextResponse.json({ error: 'forbidden' }, { status: StatusCodes.FORBIDDEN });
+    }
+
+    if (error instanceof ParticipantNotFoundError) {
+      return NextResponse.json({ error: 'participant_not_found' }, { status: StatusCodes.NOT_FOUND });
+    }
+
+    throw error;
   }
 }
