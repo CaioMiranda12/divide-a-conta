@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { registerSchema, type RegisterFormValues } from '@/schemas/auth';
 import { useRegister } from '@/hooks/useRegister';
 import { AuthTextField } from '@/components/form/AuthTextField';
+import { getSafeRedirectPath } from '@/utils/redirect';
 
 const REGISTER_ERROR_MESSAGES: Record<string, string> = {
   email_already_in_use: 'Já existe uma conta com esse e-mail.',
@@ -17,7 +18,7 @@ const REGISTER_ERROR_MESSAGES: Record<string, string> = {
 export function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') ?? '/';
+  const redirectTo = getSafeRedirectPath({ redirectTo: searchParams.get('redirect') });
 
   const { register, isSubmitting, errorCode, fieldErrors } = useRegister();
 

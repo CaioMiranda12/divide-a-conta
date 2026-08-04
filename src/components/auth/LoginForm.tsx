@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { loginSchema, type LoginFormValues } from '@/schemas/auth';
 import { useLogin } from '@/hooks/useLogin';
 import { AuthTextField } from '@/components/form/AuthTextField';
+import { getSafeRedirectPath } from '@/utils/redirect';
 
 const LOGIN_ERROR_MESSAGES: Record<string, string> = {
   invalid_credentials: 'E-mail ou senha incorretos.',
@@ -17,7 +18,7 @@ const LOGIN_ERROR_MESSAGES: Record<string, string> = {
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') ?? '/';
+  const redirectTo = getSafeRedirectPath({ redirectTo: searchParams.get('redirect') });
 
   const { login, isSubmitting, errorCode, fieldErrors } = useLogin();
 
