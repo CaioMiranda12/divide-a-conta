@@ -173,7 +173,13 @@ export function OwnerBillEditor({
           </button>
         </>
       ) : (
-        <DinerSplitEditor billId={bill.id} items={items} participants={participants} onChanged={onBillChanged} />
+        <DinerSplitEditor
+          billId={bill.id}
+          billStatus={bill.status}
+          items={items}
+          participants={participants}
+          onChanged={onBillChanged}
+        />
       )}
     </div>
   );
