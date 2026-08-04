@@ -7,7 +7,7 @@ export async function getBillSummary({ billId }: { billId: string }) {
     where: { id: billId },
     include: {
       items: { include: { claims: true } },
-      participants: { include: { user: { select: { name: true } } } },
+      participants: true,
     },
   });
 
