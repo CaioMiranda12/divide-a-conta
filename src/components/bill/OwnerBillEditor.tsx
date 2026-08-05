@@ -127,25 +127,25 @@ export function OwnerBillEditor({
   return (
     <div className="max-w-md mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <Link href="/" className="text-sm font-body text-ink-muted hover:text-ink">
+        <Link href="/" className="text-sm font-body text-secondary hover:text-primary">
           ← Minhas contas
         </Link>
 
         {step === 'split' && (
-          <button onClick={() => setStep('items')} className="text-sm font-body text-ink-muted hover:text-ink">
+          <button onClick={() => setStep('items')} className="text-sm font-body text-secondary hover:text-primary">
             Editar itens
           </button>
         )}
       </div>
 
       {step === 'items' ? (
-        <>
+        <div className="bg-panel border border-subtle rounded-3xl p-5">
           <input
             value={restaurantName}
             onChange={(event) => setRestaurantName(event.target.value)}
             onBlur={handleHeaderFieldBlur}
             placeholder="Nome do restaurante"
-            className="w-full bg-transparent font-display text-2xl tracking-wide focus:outline-none placeholder:text-ink-muted"
+            className="w-full bg-transparent font-body text-2xl font-semibold tracking-tight text-primary focus:outline-none placeholder:text-secondary"
           />
 
           <div className="mt-6">
@@ -161,40 +161,38 @@ export function OwnerBillEditor({
             ))}
           </div>
 
-          <button onClick={addItem} className="mt-3 text-sm font-body text-confirmed hover:text-stamp">
+          <button onClick={addItem} className="mt-3 text-sm font-body text-mint hover:text-mint-mid">
             + adicionar item
           </button>
 
-          <label className="mt-6 flex items-center justify-between font-body text-sm">
+          <div className="mt-6 flex items-center justify-between font-body text-sm text-secondary border-t border-subtle pt-4">
             Taxa de serviço (%)
             <input
               type="number"
               value={serviceFeePercent}
               onChange={(event) => setServiceFeePercent(Number(event.target.value))}
               onBlur={handleHeaderFieldBlur}
-              className="w-16 bg-transparent font-money text-right tabular-nums focus:outline-none border-b border-paper-line"
+              className="w-16 bg-panel-raised border border-subtle rounded-lg px-2 py-1 font-money text-primary text-right tabular-nums focus:outline-none focus:border-mint"
             />
-          </label>
+          </div>
 
-          <label className="mt-3 flex items-center justify-between font-body text-sm">
+          <div className="mt-3 flex items-center justify-between font-body text-sm text-secondary">
             Total da conta
             <MoneyInput
               valueInCents={totalAmountInCents}
               onChangeInCents={setTotalAmountInCents}
               onBlur={handleHeaderFieldBlur}
-              className={`w-24 bg-transparent font-money text-right tabular-nums focus:outline-none border-b ${
-                hasMismatch ? 'border-pending' : 'border-paper-line'
+              className={`w-24 bg-panel-raised border rounded-lg px-2 py-1 font-money text-primary text-right tabular-nums focus:outline-none ${
+                hasMismatch ? 'border-negative' : 'border-subtle focus:border-mint'
               }`}
             />
-          </label>
+          </div>
 
           <div className="mt-2 min-h-5 flex items-center justify-between">
-            <span className="text-xs font-body text-ink-muted">
-              {isSubmitting ? 'Salvando...' : ' '}
-            </span>
+            <span className="text-xs font-body text-secondary">{isSubmitting ? 'Salvando...' : ' '}</span>
 
             {hasMismatch && (
-              <span className="text-xs font-money text-pending tabular-nums">
+              <span className="text-xs font-money text-negative tabular-nums">
                 {mismatchInCents > 0
                   ? `faltam R$ ${centsToDisplayValue({ amountInCents: mismatchInCents })}`
                   : `R$ ${centsToDisplayValue({ amountInCents: -mismatchInCents })} a mais`}
@@ -205,7 +203,7 @@ export function OwnerBillEditor({
           <button
             onClick={handleDivideBillClick}
             disabled={isConfirming || editableItems.length === 0}
-            className="mt-8 w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
+            className="mt-8 w-full bg-mint hover:bg-mint-mid text-on-accent font-body font-semibold rounded-xl py-2.5 transition-colors disabled:opacity-60"
           >
             {isConfirming ? 'Abrindo...' : 'Dividir a conta →'}
           </button>
@@ -223,7 +221,7 @@ export function OwnerBillEditor({
             onConfirm={handleConfirmDespiteMismatch}
             onCancel={() => setIsMismatchDialogOpen(false)}
           />
-        </>
+        </div>
       ) : (
         <DinerSplitEditor
           billId={bill.id}

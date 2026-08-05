@@ -6,20 +6,20 @@ import type { ApiBillListItem } from '@/types/api';
 import { useDeleteBill } from '@/hooks/useDeleteBill';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
-const STATUS_COLOR_CLASS_NAME: Record<ApiBillListItem['status'], string> = {
-  processing: 'text-pending',
-  draft: 'text-pending',
-  open: 'text-confirmed',
-  closed: 'text-ink-muted',
-  failed: 'text-stamp',
-};
-
 const STATUS_LABELS: Record<ApiBillListItem['status'], string> = {
   processing: 'Processando',
   draft: 'Rascunho',
   open: 'Aberta',
-  closed: 'Encerrada',
+  closed: 'Fechada',
   failed: 'Falhou',
+};
+
+const STATUS_TAG_CLASS_NAME: Record<ApiBillListItem['status'], string> = {
+  processing: 'text-secondary border-subtle',
+  draft: 'text-secondary border-subtle',
+  open: 'text-mint border-mint/40',
+  closed: 'text-secondary border-subtle',
+  failed: 'text-negative border-negative/40',
 };
 
 export function BillListItemCard({
@@ -41,17 +41,27 @@ export function BillListItemCard({
   }
 
   return (
-    <div className="flex items-center justify-between border-b border-dashed border-paper-line py-3">
-      <Link href={`/bill/${bill.id}`} className="flex-1 min-w-0 hover:opacity-70 transition-opacity">
-        <span className="font-body text-sm block truncate">{bill.restaurantName ?? 'Conta sem nome'}</span>
-        <span className={`font-money text-xs ${STATUS_COLOR_CLASS_NAME[bill.status]}`}>
-          {STATUS_LABELS[bill.status]}
+    <div className="flex items-center gap-3 bg-panel border border-subtle rounded-2xl px-4 py-3">
+      <span className="w-8 h-8 rounded-full border border-mint/40 flex items-center justify-center text-mint font-body text-xs shrink-0">
+        {(bill.restaurantName ?? '?').charAt(0).toUpperCase()}
+      </span>
+
+      <Link href={`/bill/${bill.id}`} className="flex-1 min-w-0">
+        <span className="font-body text-sm text-primary block truncate">
+          {bill.restaurantName ?? 'Conta sem nome'}
+        </span>
+        <span className="font-body text-xs text-secondary">
+          {new Date(bill.createdAt).toLocaleDateString('pt-BR')}
         </span>
       </Link>
 
+      <span className={`text-xs font-body px-2 py-0.5 rounded-full border shrink-0 ${STATUS_TAG_CLASS_NAME[bill.status]}`}>
+        {STATUS_LABELS[bill.status]}
+      </span>
+
       <button
         onClick={() => setIsConfirmDialogOpen(true)}
-        className="ml-3 shrink-0 text-sm font-body text-ink-muted hover:text-stamp"
+        className="shrink-0 text-xs font-body text-secondary hover:text-negative"
         aria-label={`Excluir conta ${bill.restaurantName ?? 'sem nome'}`}
       >
         excluir
@@ -64,6 +74,7 @@ export function BillListItemCard({
         confirmLabel="Excluir"
         confirmingLabel="Excluindo..."
         isConfirming={isDeleting}
+        tone="destructive"
         onConfirm={handleConfirmDelete}
         onCancel={() => setIsConfirmDialogOpen(false)}
       />

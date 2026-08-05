@@ -31,7 +31,7 @@ export function MoneyInput({
       onChange={handleChange}
       onBlur={onBlur}
       disabled={disabled}
-      className={className}
+      className={className ?? 'bg-panel-raised border border-subtle rounded-lg px-2 py-1 font-money text-sm text-primary text-right tabular-nums focus:outline-none focus:border-mint disabled:text-secondary'}
       placeholder="0,00"
     />
   );

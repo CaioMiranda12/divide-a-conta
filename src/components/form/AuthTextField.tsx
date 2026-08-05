@@ -13,11 +13,11 @@ export const AuthTextField = forwardRef<HTMLInputElement, AuthTextFieldProps>(
         <input
           ref={ref}
           {...inputProps}
-          className={`w-full bg-transparent border-b py-2 font-body text-sm focus:outline-none ${
-            hasError ? 'border-stamp' : 'border-paper-line focus:border-ink'
+          className={`w-full bg-panel-raised border rounded-xl px-3.5 py-2.5 font-body text-sm text-primary placeholder:text-secondary focus:outline-none focus:ring-1 ${
+            hasError ? 'border-negative focus:ring-negative' : 'border-subtle focus:ring-mint focus:border-mint'
           }`}
         />
-        {hasError && <p className="mt-1 text-xs font-body text-stamp">{errorMessage}</p>}
+        {hasError && <p className="mt-1 text-xs font-body text-negative">{errorMessage}</p>}
       </div>
     );
   },

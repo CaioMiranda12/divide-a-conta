@@ -55,15 +55,19 @@ export function BillUploadForm({ onBillCreated }: { onBillCreated: (params: { bi
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-paper border border-paper-line p-5">
-      <label className="block font-body text-sm text-ink-muted mb-3">Foto da conta</label>
+    <form onSubmit={handleSubmit} className="bg-panel border border-subtle rounded-3xl p-5">
+      <label className="block font-body text-xs uppercase tracking-widest text-secondary mb-3">Foto da conta</label>
 
       <input
         ref={inputRef}
         type="file"
         accept={ACCEPTED_IMAGE_MIME_TYPES.join(',')}
         onChange={handleFileChange}
-        className={previewUrl ? 'hidden' : 'w-full font-body text-sm file:mr-3 file:border-0 file:bg-ink file:text-paper file:px-3 file:py-1.5 file:text-sm'}
+        className={
+          previewUrl
+            ? 'hidden'
+            : 'w-full font-body text-sm text-secondary file:mr-3 file:border-0 file:rounded-lg file:bg-mint file:text-on-accent file:font-semibold file:px-3 file:py-1.5 file:text-sm'
+        }
       />
 
       {previewUrl && (
@@ -71,14 +75,14 @@ export function BillUploadForm({ onBillCreated }: { onBillCreated: (params: { bi
           <img
             src={previewUrl}
             alt="Pré-visualização da nota fiscal selecionada"
-            className="w-full h-[70vh] sm:h-[28rem] object-contain border border-paper-line bg-ink/5"
+            className="w-full h-[70vh] sm:h-[28rem] object-contain rounded-2xl border border-subtle bg-panel-raised"
           />
 
           <button
             type="button"
             onClick={handleChooseAnotherImage}
             disabled={isSubmitting}
-            className="mt-2 text-sm font-body text-ink-muted hover:text-ink disabled:opacity-60"
+            className="mt-2 text-sm font-body text-secondary hover:text-primary disabled:opacity-60"
           >
             Escolher outra foto
           </button>
@@ -86,7 +90,7 @@ export function BillUploadForm({ onBillCreated }: { onBillCreated: (params: { bi
       )}
 
       {errorCode && (
-        <p className="mt-3 text-sm font-body text-stamp">
+        <p className="mt-3 text-sm font-body text-negative">
           {UPLOAD_ERROR_MESSAGES[errorCode] ?? UPLOAD_ERROR_MESSAGES.unknown_error}
         </p>
       )}
@@ -94,7 +98,7 @@ export function BillUploadForm({ onBillCreated }: { onBillCreated: (params: { bi
       <button
         type="submit"
         disabled={isSubmitting || !selectedImage}
-        className="mt-4 w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
+        className="mt-4 w-full bg-mint hover:bg-mint-mid text-on-accent font-body font-semibold rounded-xl py-2.5 transition-colors disabled:opacity-60"
       >
         {isSubmitting ? 'Processando...' : 'Adicionar conta'}
       </button>

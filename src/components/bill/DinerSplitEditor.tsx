@@ -94,11 +94,11 @@ export function DinerSplitEditor({
     if (hasSucceeded) onChanged();
   }
   return (
-    <div>
-      <h1 className="font-display text-2xl tracking-wide mb-4">Quem comeu o quê</h1>
+    <div className="bg-panel border border-subtle rounded-3xl p-5">
+      <h1 className="font-body text-xl font-semibold tracking-tight text-primary mb-4">Quem comeu o quê</h1>
 
       {isClosed && (
-        <p className="mb-4 text-sm font-body text-ink-muted border border-paper-line px-3 py-2">
+        <p className="mb-4 text-sm font-body text-secondary border border-subtle rounded-xl px-3 py-2">
           Essa conta já foi fechada.
         </p>
       )}
@@ -110,36 +110,36 @@ export function DinerSplitEditor({
               value={newDinerName}
               onChange={(event) => setNewDinerName(event.target.value)}
               placeholder="Nome da pessoa"
-              className="flex-1 bg-transparent border-b border-paper-line py-2 font-body text-sm focus:outline-none focus:border-ink"
+              className="flex-1 bg-panel-raised border border-subtle rounded-lg px-3 py-2 font-body text-sm text-primary placeholder:text-secondary focus:outline-none focus:border-mint"
             />
             <button
               type="submit"
               disabled={isCreatingDiner || !newDinerName.trim()}
-              className="bg-ink text-paper font-body text-sm px-4 disabled:opacity-60"
+              className="bg-mint text-on-accent font-body font-semibold text-sm rounded-lg px-4 disabled:opacity-60"
             >
               Adicionar
             </button>
           </form>
 
           {createDinerErrorCode === 'display_name_already_in_use' && (
-            <p className="text-sm font-body text-stamp -mt-4 mb-4">Já existe uma pessoa com esse nome.</p>
+            <p className="text-sm font-body text-negative -mt-4 mb-4">Já existe uma pessoa com esse nome.</p>
           )}
         </>
       )}
 
       {hasNoDiners && isOpen && (
-        <p className="font-body text-sm text-ink-muted mb-6">Adicione as pessoas que participaram dessa conta.</p>
+        <p className="font-body text-sm text-secondary mb-6">Adicione as pessoas que participaram dessa conta.</p>
       )}
 
       {!hasNoDiners && (
         <div className="mb-4 flex flex-wrap gap-2">
           {participants.map((participant) => (
-            <span key={participant.id} className="flex items-center gap-1.5 border border-paper-line px-2.5 py-1 text-sm font-body">
+            <span key={participant.id} className="flex items-center gap-1.5 border border-subtle rounded-full px-3 py-1 text-sm font-body text-primary">
               {participant.displayName}
               {isOpen && (
                 <button
                   onClick={() => handleRemoveDiner({ participantId: participant.id })}
-                  className="text-ink-muted hover:text-stamp"
+                  className="text-secondary hover:text-negative"
                   aria-label={`Remover ${participant.displayName}`}
                 >
                   ×
@@ -152,7 +152,7 @@ export function DinerSplitEditor({
 
       {!hasNoDiners && isOpen && (
         <div className="mb-6">
-          <p className="font-body text-sm text-ink-muted mb-2">Quem pagou a conta?</p>
+          <p className="font-body text-xs uppercase tracking-widest text-secondary mb-2">Quem pagou a conta?</p>
 
           <div className="flex flex-wrap gap-2">
             {participants.map((participant) => {
@@ -163,10 +163,8 @@ export function DinerSplitEditor({
                   key={participant.id}
                   onClick={() => handleTogglePayer({ participantId: participant.id })}
                   disabled={isSettingPayer}
-                  className={`text-xs font-body px-2.5 py-1 border transition-colors ${
-                    isPayer
-                      ? 'bg-confirmed text-paper border-confirmed'
-                      : 'border-paper-line text-ink-muted hover:border-ink'
+                  className={`text-xs font-body px-2.5 py-1 rounded-full border transition-colors ${
+                    isPayer ? 'bg-mint text-on-accent border-mint font-semibold' : 'border-subtle text-secondary hover:border-mint/50'
                   }`}
                 >
                   {participant.displayName}
@@ -180,10 +178,10 @@ export function DinerSplitEditor({
       {!hasNoDiners && (
         <div className="space-y-4">
           {items.map((item) => (
-            <div key={item.id} className="border-b border-dashed border-paper-line pb-3">
+            <div key={item.id} className="border-b border-subtle pb-3">
               <div className="flex items-baseline justify-between">
-                <span className="font-body text-sm">{item.description}</span>
-                <span className="font-money text-sm tabular-nums text-ink-muted">
+                <span className="font-body text-sm text-primary">{item.description}</span>
+                <span className="font-money text-sm tabular-nums text-secondary">
                   R$ {centsToDisplayValue({ amountInCents: item.priceInCents * item.quantity })}
                 </span>
               </div>
@@ -197,8 +195,8 @@ export function DinerSplitEditor({
                       key={participant.id}
                       onClick={() => toggleClaim({ item, participantId: participant.id })}
                       disabled={isTogglingClaim || !isOpen}
-                      className={`text-xs font-body px-2.5 py-1 border transition-colors ${
-                        isSelected ? 'bg-confirmed text-paper border-confirmed' : 'border-paper-line text-ink-muted hover:border-ink'
+                      className={`text-xs font-body px-2.5 py-1 rounded-full border transition-colors ${
+                        isSelected ? 'bg-mint-dim text-mint border-mint/50' : 'border-subtle text-secondary hover:border-mint/30'
                       }`}
                     >
                       {participant.displayName}
@@ -213,7 +211,7 @@ export function DinerSplitEditor({
 
       <button
         onClick={() => setIsSummaryVisible((current) => !current)}
-        className="mt-6 w-full border border-ink text-ink font-body text-sm py-2.5 hover:bg-ink hover:text-paper transition-colors"
+        className="mt-6 w-full border border-subtle text-primary font-body text-sm rounded-xl py-2.5 hover:border-mint/50 transition-colors"
       >
         {isSummaryVisible ? 'Ocultar resumo' : 'Ver resumo'}
       </button>
@@ -224,7 +222,7 @@ export function DinerSplitEditor({
         <button
           onClick={() => setIsCloseDialogOpen(true)}
           disabled={hasNoDiners}
-          className="mt-4 w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
+          className="mt-4 w-full bg-mint hover:bg-mint-mid text-on-accent font-body font-semibold rounded-xl py-2.5 transition-colors disabled:opacity-60"
         >
           Fechar conta
         </button>

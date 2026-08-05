@@ -24,12 +24,12 @@ export function HomePageContent({ userName }: { userName: string }) {
   return (
     <div className="max-w-md mx-auto px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl tracking-wide">Olá, {userName}</h1>
+        <h1 className="font-body text-2xl font-semibold tracking-tight text-primary">Olá, {userName}</h1>
 
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="text-sm font-body text-ink-muted hover:text-stamp disabled:opacity-60"
+          className="text-sm font-body text-secondary hover:text-negative disabled:opacity-60"
         >
           Sair
         </button>
@@ -39,12 +39,12 @@ export function HomePageContent({ userName }: { userName: string }) {
         <BillUploadForm onBillCreated={handleBillCreated} />
       </div>
 
-      <h2 className="font-display text-lg tracking-wide mt-10 mb-3">Suas contas</h2>
+      <h2 className="font-body text-xs uppercase tracking-widest text-secondary mt-10 mb-3">Suas contas</h2>
 
-      {isLoading && <p className="font-body text-sm text-ink-muted">Carregando...</p>}
+      {isLoading && <p className="font-body text-sm text-secondary">Carregando...</p>}
 
       {!isLoading && bills.length === 0 && (
-        <p className="font-body text-sm text-ink-muted">Nenhuma conta ainda.</p>
+        <p className="font-body text-sm text-secondary">Nenhuma conta ainda.</p>
       )}
 
       <div className="space-y-2">

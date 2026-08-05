@@ -6,14 +6,14 @@ const STATUS_MESSAGES: Partial<Record<BillStatus, string>> = {
 };
 
 const STATUS_COLOR_CLASS_NAME: Partial<Record<BillStatus, string>> = {
-  processing: 'text-pending',
-  failed: 'text-stamp',
+  processing: 'text-secondary',
+  failed: 'text-negative',
 };
 
 export function BillProcessingState({ status }: { status: BillStatus }) {
   return (
     <div className="max-w-md mx-auto px-4 py-16 text-center">
-      <p className={`font-display text-lg ${STATUS_COLOR_CLASS_NAME[status]}`}>{STATUS_MESSAGES[status]}</p>
+      <p className={`font-body text-lg ${STATUS_COLOR_CLASS_NAME[status]}`}>{STATUS_MESSAGES[status]}</p>
     </div>
   );
 }

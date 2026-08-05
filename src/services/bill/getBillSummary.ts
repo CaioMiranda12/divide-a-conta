@@ -48,7 +48,10 @@ export async function getBillSummary({ billId }: { billId: string }) {
         }))
     : [];
 
-  return {
+  const claimedItemsCount = bill.items.filter((item) => item.claims.length > 0).length;
+  const totalItemsCount = bill.items.length;
+
+   return {
     bill: {
       id: bill.id,
       restaurantName: bill.restaurantName,
@@ -60,5 +63,6 @@ export async function getBillSummary({ billId }: { billId: string }) {
       ? { participantId: payerParticipant.id, displayName: payerParticipant.displayName }
       : null,
     debts,
+    claimStats: { claimedItemsCount, totalItemsCount },
   };
 }

@@ -17,14 +17,14 @@ export function BillItemRow({
   onRemove: () => void;
 }) {
   return (
-    <div className="flex items-center gap-2 border-b border-dashed border-paper-line py-2">
+    <div className="flex items-center gap-2 border-b border-subtle py-2.5">
       <input
         value={item.description}
         onChange={(event) => onFieldChange('description', event.target.value)}
         onBlur={onBlur}
         disabled={!isEditable}
         placeholder="Descrição"
-        className="flex-1 bg-transparent font-body text-sm focus:outline-none disabled:text-ink-muted"
+        className="flex-1 bg-transparent font-body text-sm text-primary placeholder:text-secondary focus:outline-none disabled:text-secondary"
       />
 
       <MoneyInput
@@ -32,7 +32,7 @@ export function BillItemRow({
         onChangeInCents={(amountInCents) => onFieldChange('priceInCents', amountInCents)}
         onBlur={onBlur}
         disabled={!isEditable}
-        className="w-20 bg-transparent font-money text-sm text-right tabular-nums focus:outline-none disabled:text-ink-muted"
+        className="w-20 bg-transparent font-money text-sm text-primary text-right tabular-nums focus:outline-none disabled:text-secondary"
       />
 
       <input
@@ -48,11 +48,11 @@ export function BillItemRow({
           onBlur();
         }}
         disabled={!isEditable}
-        className="w-12 bg-transparent font-money text-sm text-right tabular-nums focus:outline-none disabled:text-ink-muted"
+        className="w-12 bg-transparent font-money text-sm text-primary text-right tabular-nums focus:outline-none disabled:text-secondary"
       />
 
       {isEditable && (
-        <button onClick={onRemove} className="text-stamp text-sm font-body hover:text-stamp-dark shrink-0">
+        <button onClick={onRemove} className="text-negative text-sm font-body hover:opacity-80 shrink-0">
           remover
         </button>
       )}

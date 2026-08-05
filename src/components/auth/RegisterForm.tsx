@@ -38,9 +38,9 @@ export function RegisterForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <h1 className="font-display text-2xl tracking-wide mb-1">Criar conta</h1>
-        <p className="font-money text-xs text-ink-muted mb-6">divide a conta</p>
+      <div className="w-full max-w-sm bg-panel border border-subtle rounded-3xl p-6">
+        <h1 className="font-body text-2xl font-semibold tracking-tight text-primary mb-1">Entrar</h1>
+        <p className="font-money text-xs text-secondary mb-6">divide a conta</p>
 
         <form onSubmit={form.handleSubmit(handleSubmit)} noValidate className="space-y-3">
           <AuthTextField
@@ -61,7 +61,7 @@ export function RegisterForm() {
           />
 
           {errorCode && (
-            <p className="text-sm font-body text-stamp">
+            <p className="text-sm font-body text-negative">
               {REGISTER_ERROR_MESSAGES[errorCode] ?? REGISTER_ERROR_MESSAGES.unknown_error}
             </p>
           )}
@@ -69,17 +69,17 @@ export function RegisterForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-stamp hover:bg-stamp-dark text-paper font-body font-medium py-2.5 transition-colors disabled:opacity-60"
+            className="w-full bg-mint hover:bg-mint-mid text-on-accent font-body font-semibold rounded-xl py-2.5 transition-colors disabled:opacity-60"
           >
-            {isSubmitting ? 'Criando...' : 'Criar conta'}
+            {isSubmitting ? 'Criando conta...' : 'Criar conta'}
           </button>
         </form>
 
         <Link
           href={`/login?redirect=${encodeURIComponent(redirectTo)}`}
-          className="mt-4 block text-center text-sm font-body text-ink-muted hover:text-ink"
+          className="mt-4 block text-center text-sm font-body text-secondary hover:text-primary"
         >
-          Já tenho conta
+          Já tenho uma conta
         </Link>
       </div>
     </div>
