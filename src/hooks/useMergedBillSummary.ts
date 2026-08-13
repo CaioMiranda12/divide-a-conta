@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiFetch, ApiError } from '@/lib/api/apiClient';
 import type { ApiMergedBillSummary } from '@/types/api';
 
-export function useMergedBillSummary({ billIds }: { billIds: string[] }) {
+export function useMergedBillSummary({ billIdsParam }: { billIdsParam: string }) {
   const [summary, setSummary] = useState<ApiMergedBillSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorCode, setErrorCode] = useState<string | null>(null);
@@ -12,7 +12,7 @@ export function useMergedBillSummary({ billIds }: { billIds: string[] }) {
   const reloadSummary = useCallback(async () => {
     try {
       const data = await apiFetch<ApiMergedBillSummary>({
-        path: `/bill/merge-summary?billIds=${billIds.join(',')}`,
+        path: `/bill/merge-summary?billIds=${billIdsParam}`,
       });
 
       setSummary(data);
@@ -20,7 +20,7 @@ export function useMergedBillSummary({ billIds }: { billIds: string[] }) {
     } catch (error) {
       setErrorCode(error instanceof ApiError ? error.code : 'unknown_error');
     }
-  }, [billIds]);
+  }, [billIdsParam]);
 
   useEffect(() => {
     setIsLoading(true);
