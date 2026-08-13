@@ -134,6 +134,49 @@ export function MergedBillSummaryView() {
           </div>
         ))}
       </div>
+
+      <h2 className="font-body text-xs uppercase tracking-widest text-secondary mt-8 mb-3">Saldos atuais</h2>
+
+      <div className="bg-panel border border-subtle rounded-2xl divide-y divide-subtle">
+        {summary.balances.map((balance) => {
+          const isPositive = balance.balanceInCents > 0;
+          const isNegative = balance.balanceInCents < 0;
+
+          return (
+            <div key={balance.displayName} className="flex items-center justify-between px-4 py-2.5">
+              <span className="font-body text-sm text-primary">{balance.displayName}</span>
+              <span
+                className={`font-money text-sm tabular-nums ${
+                  isPositive ? 'text-mint' : isNegative ? 'text-negative' : 'text-secondary'
+                }`}
+              >
+                {isPositive ? '+' : ''}R$ {centsToDisplayValue({ amountInCents: balance.balanceInCents })}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <h2 className="font-body text-xs uppercase tracking-widest text-secondary mt-8 mb-3">
+        Transferências mínimas necessárias
+      </h2>
+
+      {summary.minimalTransfers.length === 0 ? (
+        <p className="font-body text-sm text-secondary">Ninguém precisa transferir nada.</p>
+      ) : (
+        <div className="bg-panel border border-subtle rounded-2xl divide-y divide-subtle">
+          {summary.minimalTransfers.map((transfer, index) => (
+            <div key={index} className="flex items-center justify-between px-4 py-2.5">
+              <span className="font-body text-sm text-primary">
+                {transfer.fromDisplayName} <span className="text-secondary">→</span> {transfer.toDisplayName}
+              </span>
+              <span className="font-money text-sm tabular-nums text-mint">
+                R$ {centsToDisplayValue({ amountInCents: transfer.amountInCents })}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
