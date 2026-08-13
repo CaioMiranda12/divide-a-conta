@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db/prisma';
 import { verifyBillOwnership } from '@/services/bill/verifyBillOwnership';
 import { BillNotFoundError } from '@/lib/errors/billErrors';
 import { calculateBillSummary } from '@/lib/billing/calculateBillSummary';
+import { calculateMinimalTransfers, calculateNetBalances } from '@/lib/billing/calculateMinimalTransfers';
 
 type CombinedParticipant = {
   displayName: string;
@@ -90,6 +91,17 @@ export async function getMergedBillSummary({
     };
   });
 
+  const balanceByName = calculateNetBalances({
+    bills: billSummaries.map((bill) => ({ payer: bill.payer, debts: bill.debts })),
+  });
+
+  const balances = Array.from(balanceByName.entries()).map(([displayName, balanceInCents]) => ({
+    displayName,
+    balanceInCents,
+  }));
+
+  const minimalTransfers = calculateMinimalTransfers({ balances });
+
   const combinedTotalInCents = bills.reduce((sum, bill) => sum + bill.totalAmountInCents, 0);
 
   return {
@@ -98,5 +110,7 @@ export async function getMergedBillSummary({
       (a, b) => b.totalAmountInCents - a.totalAmountInCents,
     ),
     combinedTotalInCents,
+    balances,
+    minimalTransfers,
   };
 }
