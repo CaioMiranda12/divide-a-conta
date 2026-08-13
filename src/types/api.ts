@@ -75,8 +75,13 @@ export type ApiCombinedParticipant = {
   bills: { billId: string; restaurantName: string | null; amountInCents: number }[];
 };
 
+export type ApiParticipantBalance = { displayName: string; balanceInCents: number };
+export type ApiMinimalTransfer = { fromDisplayName: string; toDisplayName: string; amountInCents: number };
+
 export type ApiMergedBillSummary = {
   bills: ApiMergedBillEntry[];
   combinedParticipants: ApiCombinedParticipant[];
   combinedTotalInCents: number;
+  balances: ApiParticipantBalance[];
+  minimalTransfers: ApiMinimalTransfer[];
 };
