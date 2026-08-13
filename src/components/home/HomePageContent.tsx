@@ -5,6 +5,7 @@ import { useBillList } from '@/hooks/useBillList';
 import { useLogout } from '@/hooks/useLogout';
 import { BillUploadForm } from '@/components/home/BillUploadForm';
 import { BillListItemCard } from '@/components/home/BillListItemCard';
+import Link from 'next/link';
 
 export function HomePageContent({ userName }: { userName: string }) {
   const router = useRouter();
@@ -38,6 +39,13 @@ export function HomePageContent({ userName }: { userName: string }) {
       <div className="mt-6">
         <BillUploadForm onBillCreated={handleBillCreated} />
       </div>
+
+      <Link
+        href="/bills/merge"
+        className="mt-3 block text-center text-sm font-body text-secondary hover:text-primary border border-subtle rounded-xl py-2.5"
+      >
+        Juntar contas
+      </Link>
 
       <h2 className="font-body text-xs uppercase tracking-widest text-secondary mt-10 mb-3">Suas contas</h2>
 
