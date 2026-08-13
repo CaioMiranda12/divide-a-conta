@@ -9,11 +9,12 @@ const MIN_BILLS_TO_MERGE = 2;
 
 export function MergedBillSummaryView() {
   const searchParams = useSearchParams();
-  const billIds = (searchParams.get('billIds') ?? '').split(',').filter(Boolean);
+  const billIdsParam = searchParams.get('billIds') ?? '';
+  const billIds = billIdsParam.split(',').filter(Boolean);
 
   const hasEnoughBills = billIds.length >= MIN_BILLS_TO_MERGE;
 
-  const { summary, isLoading, errorCode } = useMergedBillSummary({ billIds: hasEnoughBills ? billIds : [] });
+  const { summary, isLoading, errorCode } = useMergedBillSummary({ billIdsParam: hasEnoughBills ? billIdsParam : '' });
 
   if (!hasEnoughBills) {
     return (
