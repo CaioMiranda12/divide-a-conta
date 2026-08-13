@@ -115,6 +115,12 @@ export function MergedBillSummaryView() {
 
             {bill.payer && bill.debts.length > 0 && (
               <ul className="mt-2 space-y-0.5">
+                <li className="flex items-baseline justify-between text-xs font-money text-primary">
+                    <span>{bill.payer.displayName}</span>
+                    <span className="tabular-nums">
+                      R$ {centsToDisplayValue({ amountInCents: bill.totalAmountInCents - bill.debts.reduce((sum, debt) => sum + debt.amountOwedInCents, 0) })}
+                    </span>
+                  </li>
                 {bill.debts.map((debt) => (
                   <li key={debt.participantId} className="flex items-baseline justify-between text-xs font-money text-primary">
                     <span>{debt.displayName}</span>
