@@ -60,3 +60,23 @@ export type ApiBillSummary = {
   claimStats: ApiBillClaimStats;
 };
 
+export type ApiMergedBillEntry = {
+  billId: string;
+  restaurantName: string | null;
+  totalAmountInCents: number;
+  hasUnclaimedItems: boolean;
+  payer: ApiBillPayer | null;
+  debts: ApiBillDebt[];
+};
+
+export type ApiCombinedParticipant = {
+  displayName: string;
+  totalAmountInCents: number;
+  bills: { billId: string; restaurantName: string | null; amountInCents: number }[];
+};
+
+export type ApiMergedBillSummary = {
+  bills: ApiMergedBillEntry[];
+  combinedParticipants: ApiCombinedParticipant[];
+  combinedTotalInCents: number;
+};
