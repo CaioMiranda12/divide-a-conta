@@ -17,6 +17,7 @@ type LocalClaim = { billItemId: string; participantId: string };
 export function DinerSplitEditor({
   billId,
   billStatus,
+  billRestaurantName,
   billPayerParticipantId,
   items,
   participants,
@@ -24,6 +25,7 @@ export function DinerSplitEditor({
 }: {
   billId: string;
   billStatus: ApiBillDetail['status'];
+  billRestaurantName: string | null;
   billPayerParticipantId: string | null;
   items: ApiBillItem[];
   participants: ApiBillParticipant[];
@@ -138,6 +140,9 @@ export function DinerSplitEditor({
 
   return (
     <div className="bg-panel border border-subtle rounded-3xl p-5">
+      <p className="font-body text-xs uppercase tracking-widest text-secondary mb-1">
+        {billRestaurantName ?? 'Conta sem nome'}
+      </p>
       <h1 className="font-body text-xl font-semibold tracking-tight text-primary mb-4">Lista de Produtos</h1>
 
       {isClosed && (

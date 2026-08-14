@@ -212,6 +212,7 @@ export function OwnerBillEditor({
         <DinerSplitEditor
           billId={bill.id}
           billStatus={bill.status}
+          billRestaurantName={bill.restaurantName}
           billPayerParticipantId={bill.paidByParticipantId}
           items={items}
           participants={participants}
