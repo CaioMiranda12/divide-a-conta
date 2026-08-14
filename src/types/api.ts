@@ -37,6 +37,8 @@ export type ApiBillParticipant = { id: string; displayName: string };
 export type ApiBillSummaryParticipant = {
   participantId: string;
   displayName: string;
+  subtotalInCents: number;
+  serviceFeeInCents: number;
   amountInCents: number;
   items: { billItemId: string; description: string; amountInCents: number }[];
 };
