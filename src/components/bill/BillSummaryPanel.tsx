@@ -111,6 +111,17 @@ export function BillSummaryPanel({ billId }: { billId: string }) {
                     </span>
                   </li>
                 ))}
+
+                {participant.serviceFeeInCents > 0 && (
+                  <li className="flex items-baseline justify-between text-sm text-secondary font-money">
+                    <span className="truncate pr-2">
+                      Taxa de serviço ({summary.bill.serviceFeePercent ?? 0}%)
+                    </span>
+                    <span className="tabular-nums shrink-0">
+                      R$ {centsToDisplayValue({ amountInCents: participant.serviceFeeInCents })}
+                    </span>
+                  </li>
+                )}
               </ul>
             </div>
           ))}
