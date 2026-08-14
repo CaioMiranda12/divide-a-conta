@@ -56,6 +56,7 @@ export async function getBillSummary({ billId }: { billId: string }) {
       id: bill.id,
       restaurantName: bill.restaurantName,
       totalAmountInCents: bill.totalAmountInCents,
+      serviceFeePercent: bill.serviceFeePercent,
     },
     participants: participantsSummary,
     hasUnclaimedItems,
