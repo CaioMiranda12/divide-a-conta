@@ -34,33 +34,17 @@ export function OwnerBillEditor({
   const [editableItems, setEditableItems] = useState<EditableBillItem[]>(items);
   const [isMismatchDialogOpen, setIsMismatchDialogOpen] = useState(false);
 
-  const hasNegativeServiceFee = serviceFeePercent < 0;
-
   const { updateBillItems, isSubmitting } = useUpdateBillItems({ billId: bill.id });
   const { confirmBill, isConfirming } = useConfirmBill({ billId: bill.id });
 
   const isDraft = bill.status === 'draft';
+  const hasNegativeServiceFee = serviceFeePercent < 0;
 
   const mismatchInCents = getBillTotalMismatchInCents({
     items: editableItems,
     totalAmountInCents,
   });
   const hasMismatch = mismatchInCents !== 0;
-
-  async function persistChanges({ nextItems }: { nextItems: EditableBillItem[] }) {
-    await updateBillItems({
-      restaurantName: restaurantName || null,
-      totalAmountInCents,
-      serviceFeePercent,
-      items: nextItems.map((item) => ({
-        description: item.description,
-        priceInCents: item.priceInCents,
-        quantity: item.quantity,
-      })),
-    });
-
-    onBillChanged();
-  }
 
   function updateItemField({
     itemId,
@@ -76,10 +60,6 @@ export function OwnerBillEditor({
     );
   }
 
-  function handleItemBlur() {
-    persistChanges({ nextItems: editableItems });
-  }
-
   function addItem() {
     setEditableItems((currentItems) => [
       ...currentItems,
@@ -88,27 +68,32 @@ export function OwnerBillEditor({
   }
 
   function removeItem({ itemId }: { itemId: string }) {
-    const nextItems = editableItems.filter((item) => item.id !== itemId);
-
-    setEditableItems(nextItems);
-    persistChanges({ nextItems });
+    setEditableItems((currentItems) => currentItems.filter((item) => item.id !== itemId));
   }
 
-  function handleHeaderFieldBlur() {
-    persistChanges({ nextItems: editableItems });
-  }
+  async function saveAndProceedToSplitStep() {
+    const savedItems = await updateBillItems({
+      restaurantName: restaurantName || null,
+      totalAmountInCents,
+      serviceFeePercent,
+      items: editableItems.map((item) => ({
+        description: item.description,
+        priceInCents: item.priceInCents,
+        quantity: item.quantity,
+      })),
+    });
 
-  async function proceedToSplitStep() {
+    if (!savedItems) return;
+
     const shouldConfirmFirst = isDraft;
 
     if (shouldConfirmFirst) {
       const hasSucceeded = await confirmBill();
 
       if (!hasSucceeded) return;
-
-      onBillChanged();
     }
 
+    onBillChanged();
     setStep('split');
   }
 
@@ -120,12 +105,7 @@ export function OwnerBillEditor({
       return;
     }
 
-    proceedToSplitStep();
-  }
-
-  function handleConfirmDespiteMismatch() {
-    setIsMismatchDialogOpen(false);
-    proceedToSplitStep();
+    saveAndProceedToSplitStep();
   }
 
   return (
@@ -147,7 +127,6 @@ export function OwnerBillEditor({
           <input
             value={restaurantName}
             onChange={(event) => setRestaurantName(event.target.value)}
-            onBlur={handleHeaderFieldBlur}
             placeholder="Nome do restaurante"
             className="w-full bg-transparent font-body text-2xl font-semibold tracking-tight text-primary focus:outline-none placeholder:text-secondary"
           />
@@ -159,7 +138,6 @@ export function OwnerBillEditor({
                 item={item}
                 isEditable
                 onFieldChange={(field, value) => updateItemField({ itemId: item.id, field, value })}
-                onBlur={handleItemBlur}
                 onRemove={() => removeItem({ itemId: item.id })}
               />
             ))}
@@ -176,7 +154,6 @@ export function OwnerBillEditor({
               min={0}
               value={serviceFeePercent}
               onChange={(event) => setServiceFeePercent(Number(event.target.value))}
-              onBlur={handleHeaderFieldBlur}
               className={`w-16 bg-panel-raised border rounded-lg px-2 py-1 font-money text-primary text-right tabular-nums focus:outline-none ${
                 hasNegativeServiceFee ? 'border-negative' : 'border-subtle focus:border-mint'
               }`}
@@ -194,31 +171,26 @@ export function OwnerBillEditor({
             <MoneyInput
               valueInCents={totalAmountInCents}
               onChangeInCents={setTotalAmountInCents}
-              onBlur={handleHeaderFieldBlur}
               className={`w-24 bg-panel-raised border rounded-lg px-2 py-1 font-money text-primary text-right tabular-nums focus:outline-none ${
                 hasMismatch ? 'border-negative' : 'border-subtle focus:border-mint'
               }`}
             />
           </div>
 
-          <div className="mt-2 min-h-5 flex items-center justify-between">
-            <span className="text-xs font-body text-secondary">{isSubmitting ? 'Salvando...' : ' '}</span>
-
-            {hasMismatch && (
-              <span className="text-xs font-money text-negative tabular-nums">
-                {mismatchInCents > 0
-                  ? `faltam R$ ${centsToDisplayValue({ amountInCents: mismatchInCents })}`
-                  : `R$ ${centsToDisplayValue({ amountInCents: -mismatchInCents })} a mais`}
-              </span>
-            )}
-          </div>
+          {hasMismatch && (
+            <p className="mt-2 text-xs font-money text-negative tabular-nums text-right">
+              {mismatchInCents > 0
+                ? `faltam R$ ${centsToDisplayValue({ amountInCents: mismatchInCents })}`
+                : `R$ ${centsToDisplayValue({ amountInCents: -mismatchInCents })} a mais`}
+            </p>
+          )}
 
           <button
             onClick={handleDivideBillClick}
-            disabled={isConfirming || editableItems.length === 0 || hasNegativeServiceFee}
+            disabled={isSubmitting || isConfirming || editableItems.length === 0 || hasNegativeServiceFee}
             className="mt-8 w-full bg-mint hover:bg-mint-mid text-on-accent font-body font-semibold rounded-xl py-2.5 transition-colors disabled:opacity-60"
           >
-            {isConfirming ? 'Abrindo...' : 'Dividir a conta →'}
+            {isSubmitting || isConfirming ? 'Salvando...' : 'Dividir a conta →'}
           </button>
 
           <ConfirmDialog
@@ -226,12 +198,13 @@ export function OwnerBillEditor({
             title="Os valores não batem"
             description={
               mismatchInCents > 0
-                ? `A soma dos itens está R$ ${centsToDisplayValue({ amountInCents: mismatchInCents })} menor que o total da conta. Isso pode indicar um item faltando. Quer continuar mesmo assim?`
-                : `A soma dos itens está R$ ${centsToDisplayValue({ amountInCents: -mismatchInCents })} maior que o total da conta. Isso pode indicar um preço ou quantidade errados. Quer continuar mesmo assim?`
+                ? `A soma dos itens está R$ ${centsToDisplayValue({ amountInCents: mismatchInCents })} menor que o total da conta. Corrija os valores antes de continuar.`
+                : `A soma dos itens está R$ ${centsToDisplayValue({ amountInCents: -mismatchInCents })} maior que o total da conta. Corrija os valores antes de continuar.`
             }
-            confirmLabel="Continuar mesmo assim"
+            confirmLabel="Voltar"
             isConfirming={false}
-            onConfirm={handleConfirmDespiteMismatch}
+            hideCancelButton
+            onConfirm={() => setIsMismatchDialogOpen(false)}
             onCancel={() => setIsMismatchDialogOpen(false)}
           />
         </div>
