@@ -7,13 +7,11 @@ export function BillItemRow({
   item,
   isEditable,
   onFieldChange,
-  onBlur,
   onRemove,
 }: {
   item: EditableBillItem;
   isEditable: boolean;
   onFieldChange: (field: 'description' | 'priceInCents' | 'quantity', value: string | number) => void;
-  onBlur: () => void;
   onRemove: () => void;
 }) {
   return (
@@ -21,7 +19,6 @@ export function BillItemRow({
       <input
         value={item.description}
         onChange={(event) => onFieldChange('description', event.target.value)}
-        onBlur={onBlur}
         disabled={!isEditable}
         placeholder="Descrição"
         className="flex-1 bg-transparent font-body text-sm text-primary placeholder:text-secondary focus:outline-none disabled:text-secondary"
@@ -30,7 +27,6 @@ export function BillItemRow({
       <MoneyInput
         valueInCents={item.priceInCents}
         onChangeInCents={(amountInCents) => onFieldChange('priceInCents', amountInCents)}
-        onBlur={onBlur}
         disabled={!isEditable}
         className="w-20 bg-transparent font-money text-sm text-primary text-right tabular-nums focus:outline-none disabled:text-secondary"
       />
@@ -39,13 +35,9 @@ export function BillItemRow({
         type="number"
         min={1}
         value={item.quantity}
-        onChange={(event) => onFieldChange('quantity', Number(event.target.value))}
-        onBlur={() => {
-          const hasInvalidQuantity = item.quantity < 1;
-
-          if (hasInvalidQuantity) onFieldChange('quantity', 1);
-
-          onBlur();
+        onChange={(event) => {
+          const nextValue = Number(event.target.value);
+          onFieldChange('quantity', nextValue < 1 ? 1 : nextValue);
         }}
         disabled={!isEditable}
         className="w-12 bg-transparent font-money text-sm text-primary text-right tabular-nums focus:outline-none disabled:text-secondary"
