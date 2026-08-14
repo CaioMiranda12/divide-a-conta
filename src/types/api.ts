@@ -54,7 +54,7 @@ export type ApiBillPayer = { participantId: string; displayName: string };
 export type ApiBillClaimStats = { claimedItemsCount: number; totalItemsCount: number };
 
 export type ApiBillSummary = {
-  bill: { id: string; restaurantName: string | null; totalAmountInCents: number };
+  bill: { id: string; restaurantName: string | null; totalAmountInCents: number; serviceFeePercent: number };
   participants: ApiBillSummaryParticipant[];
   hasUnclaimedItems: boolean;
   payer: ApiBillPayer | null;
