@@ -73,6 +73,8 @@ export function calculateBillSummary({
   const participantsSummary = subtotals.map((entry, index) => ({
     participantId: entry.participantId,
     displayName: entry.displayName,
+    subtotalInCents: entry.subtotalInCents,
+    serviceFeeInCents: serviceFeeShares[index],
     amountInCents: entry.subtotalInCents + serviceFeeShares[index],
     items: itemsByParticipantId.get(entry.participantId) ?? [],
   }));
