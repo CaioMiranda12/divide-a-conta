@@ -3,7 +3,7 @@ import type { BillStatus } from '@/generated/prisma/client';
 export type BillDetail = {
   id: string;
   userId: string;
-  imageUrl: string;
+  imageUrl: string | null;
   restaurantName: string | null;
   totalAmountInCents: number;
   serviceFeePercent: number;

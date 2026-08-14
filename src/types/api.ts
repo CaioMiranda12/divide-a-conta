@@ -12,7 +12,7 @@ export type ApiBillListItem = {
 export type ApiBillDetail = {
   id: string;
   userId: string;
-  imageUrl: string;
+  imageUrl: string | null;
   restaurantName: string | null;
   totalAmountInCents: number;
   serviceFeePercent: number;
