@@ -138,7 +138,7 @@ export function DinerSplitEditor({
 
   return (
     <div className="bg-panel border border-subtle rounded-3xl p-5">
-      <h1 className="font-body text-xl font-semibold tracking-tight text-primary mb-4">Quem comeu o quê</h1>
+      <h1 className="font-body text-xl font-semibold tracking-tight text-primary mb-4">Lista de Produtos</h1>
 
       {isClosed && (
         <p className="mb-4 text-sm font-body text-secondary border border-subtle rounded-xl px-3 py-2">
