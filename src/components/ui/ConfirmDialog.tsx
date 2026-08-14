@@ -10,6 +10,7 @@ export function ConfirmDialog({
   confirmingLabel,
   isConfirming,
   tone = 'neutral',
+  hideCancelButton = false,
   onConfirm,
   onCancel,
 }: {
@@ -20,6 +21,7 @@ export function ConfirmDialog({
   confirmingLabel?: string;
   isConfirming: boolean;
   tone?: 'neutral' | 'destructive';
+  hideCancelButton?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -46,12 +48,14 @@ export function ConfirmDialog({
             <p className="mt-2 font-body text-sm text-secondary">{description}</p>
 
             <div className="mt-5 flex gap-2">
-              <button
-                onClick={onCancel}
-                className="flex-1 border border-subtle text-primary font-body text-sm rounded-xl py-2 hover:bg-panel-raised"
-              >
-                Cancelar
-              </button>
+              {!hideCancelButton && (
+                <button
+                  onClick={onCancel}
+                  className="flex-1 border border-subtle text-primary font-body text-sm rounded-xl py-2 hover:bg-panel-raised"
+                >
+                  Cancelar
+                </button>
+              )}
               <button
                 onClick={onConfirm}
                 disabled={isConfirming}
