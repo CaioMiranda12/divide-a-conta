@@ -170,6 +170,7 @@ export function OwnerBillEditor({
             <input
               type="number"
               value={serviceFeePercent}
+              min={0}
               onChange={(event) => setServiceFeePercent(Number(event.target.value))}
               onBlur={handleHeaderFieldBlur}
               className="w-16 bg-panel-raised border border-subtle rounded-lg px-2 py-1 font-money text-primary text-right tabular-nums focus:outline-none focus:border-mint"
