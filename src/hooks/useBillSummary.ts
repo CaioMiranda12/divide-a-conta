@@ -4,7 +4,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api/apiClient';
 import type { ApiBillSummary } from '@/types/api';
 
-export function useBillSummary({ billId, isEnabled }: { billId: string; isEnabled: boolean }) {
+export function useBillSummary({
+  billId,
+  isEnabled,
+  refreshKey = 0,
+}: {
+  billId: string;
+  isEnabled: boolean;
+  refreshKey?: number;
+}) {
   const [summary, setSummary] = useState<ApiBillSummary | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,7 +27,7 @@ export function useBillSummary({ billId, isEnabled }: { billId: string; isEnable
 
     setIsLoading(true);
     reloadSummary().finally(() => setIsLoading(false));
-  }, [isEnabled, reloadSummary]);
+  }, [isEnabled, reloadSummary, refreshKey]);
 
   return { summary, isLoading, reloadSummary };
 }
