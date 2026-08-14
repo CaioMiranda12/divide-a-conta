@@ -1,16 +1,18 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useBillList } from '@/hooks/useBillList';
 import { useLogout } from '@/hooks/useLogout';
+import { useCreateManualBill } from '@/hooks/useCreateManualBill';
 import { BillUploadForm } from '@/components/home/BillUploadForm';
 import { BillListItemCard } from '@/components/home/BillListItemCard';
-import Link from 'next/link';
 
 export function HomePageContent({ userName }: { userName: string }) {
   const router = useRouter();
   const { bills, isLoading, reloadBills } = useBillList();
   const { logout, isLoggingOut } = useLogout();
+  const { createManualBill, isSubmitting: isCreatingManualBill } = useCreateManualBill();
 
   function handleBillCreated({ billId }: { billId: string }) {
     router.push(`/bill/${billId}`);
@@ -20,6 +22,12 @@ export function HomePageContent({ userName }: { userName: string }) {
     const hasSucceeded = await logout();
 
     if (hasSucceeded) router.push('/login');
+  }
+
+  async function handleCreateManualBill() {
+    const billId = await createManualBill();
+
+    if (billId) router.push(`/bill/${billId}`);
   }
 
   return (
@@ -39,6 +47,14 @@ export function HomePageContent({ userName }: { userName: string }) {
       <div className="mt-6">
         <BillUploadForm onBillCreated={handleBillCreated} />
       </div>
+
+      <button
+        onClick={handleCreateManualBill}
+        disabled={isCreatingManualBill}
+        className="mt-3 w-full text-center text-sm font-body text-secondary hover:text-primary border border-subtle rounded-xl py-2.5 disabled:opacity-60"
+      >
+        {isCreatingManualBill ? 'Criando...' : 'Criar conta sem foto'}
+      </button>
 
       <Link
         href="/bills/merge"
