@@ -40,6 +40,7 @@ export function DinerSplitEditor({
   const [hasDuplicateNameError, setHasDuplicateNameError] = useState(false);
   const [isSummaryVisible, setIsSummaryVisible] = useState(true);
   const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
+  const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
 
   const { saveBillSplit, isSubmitting: isSaving, errorCode: saveErrorCode } = useSaveBillSplit({ billId });
   const { closeBill, isClosing } = useCloseBill({ billId });
@@ -123,6 +124,7 @@ export function DinerSplitEditor({
     if (!hasSucceeded) return;
 
     setIsDirty(false);
+    setSummaryRefreshKey((current) => current + 1);
     onChanged();
   }
 
@@ -279,7 +281,7 @@ export function DinerSplitEditor({
         </p>
       )}
 
-      {isSummaryVisible && <BillSummaryPanel billId={billId} />}
+      {isSummaryVisible && <BillSummaryPanel billId={billId} refreshKey={summaryRefreshKey} />}
 
       {isOpen && (
         <button
