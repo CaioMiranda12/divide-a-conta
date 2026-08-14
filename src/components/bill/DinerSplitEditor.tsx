@@ -1,17 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ApiBillItem, ApiBillParticipant, ApiBillDetail } from '@/types/api';
-import { useCreateParticipant } from '@/hooks/useCreateParticipant';
-import { useDeleteParticipant } from '@/hooks/useDeleteParticipant';
-import { useItemClaim } from '@/hooks/useItemClaim';
+import { useSaveBillSplit } from '@/hooks/useSaveBillSplit';
 import { useCloseBill } from '@/hooks/useCloseBill';
 import { centsToDisplayValue } from '@/utils/currency';
 import { BillSummaryPanel } from '@/components/bill/BillSummaryPanel';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { useSetBillPayer } from '@/hooks/useSetBillPayer';
+import { generateTempId } from '@/utils/generateTempId';
 
 const DEFAULT_SPLIT_COUNT = 1;
+
+type LocalParticipant = { id: string; displayName: string };
+type LocalClaim = { billItemId: string; participantId: string };
 
 export function DinerSplitEditor({
   billId,
@@ -28,53 +29,101 @@ export function DinerSplitEditor({
   participants: ApiBillParticipant[];
   onChanged: () => void;
 }) {
+  const [localParticipants, setLocalParticipants] = useState<LocalParticipant[]>(participants);
+  const [localClaims, setLocalClaims] = useState<LocalClaim[]>(
+    items.flatMap((item) => item.claims.map((claim) => ({ billItemId: item.id, participantId: claim.participantId }))),
+  );
+  const [localPayerId, setLocalPayerId] = useState<string | null>(billPayerParticipantId);
+  const [isDirty, setIsDirty] = useState(false);
+
   const [newDinerName, setNewDinerName] = useState('');
+  const [hasDuplicateNameError, setHasDuplicateNameError] = useState(false);
   const [isSummaryVisible, setIsSummaryVisible] = useState(true);
   const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
-  const { setBillPayer, isSubmitting: isSettingPayer } = useSetBillPayer({ billId });
 
-  const { createParticipant, isSubmitting: isCreatingDiner, errorCode: createDinerErrorCode } = useCreateParticipant({ billId });
-  const { deleteParticipant } = useDeleteParticipant({ billId });
-  const { claimItem, unclaimItem, isSubmitting: isTogglingClaim } = useItemClaim({ billId });
+  const { saveBillSplit, isSubmitting: isSaving, errorCode: saveErrorCode } = useSaveBillSplit({ billId });
   const { closeBill, isClosing } = useCloseBill({ billId });
+
+  useEffect(() => {
+    if (isDirty) return;
+
+    setLocalParticipants(participants);
+    setLocalClaims(
+      items.flatMap((item) => item.claims.map((claim) => ({ billItemId: item.id, participantId: claim.participantId }))),
+    );
+    setLocalPayerId(billPayerParticipantId);
+  }, [participants, items, billPayerParticipantId, isDirty]);
 
   const isOpen = billStatus === 'open';
   const isClosed = billStatus === 'closed';
-  const hasNoDiners = participants.length === 0;
+  const hasNoDiners = localParticipants.length === 0;
 
-  async function handleAddDiner(event: React.FormEvent) {
+  function handleAddDiner(event: React.FormEvent) {
     event.preventDefault();
 
     const trimmedName = newDinerName.trim();
 
     if (!trimmedName) return;
 
-    const createdDiner = await createParticipant({ displayName: trimmedName });
+    const isDuplicate = localParticipants.some(
+      (participant) => participant.displayName.toLowerCase() === trimmedName.toLowerCase(),
+    );
 
-    if (!createdDiner) return;
+    if (isDuplicate) {
+      setHasDuplicateNameError(true);
+      return;
+    }
 
+    setHasDuplicateNameError(false);
+    setLocalParticipants((current) => [...current, { id: generateTempId(), displayName: trimmedName }]);
     setNewDinerName('');
+    setIsDirty(true);
+  }
+
+  function handleRemoveDiner({ participantId }: { participantId: string }) {
+    setLocalParticipants((current) => current.filter((participant) => participant.id !== participantId));
+    setLocalClaims((current) => current.filter((claim) => claim.participantId !== participantId));
+    setLocalPayerId((current) => (current === participantId ? null : current));
+    setIsDirty(true);
+  }
+
+  function isItemClaimedByParticipant({ billItemId, participantId }: { billItemId: string; participantId: string }): boolean {
+    return localClaims.some((claim) => claim.billItemId === billItemId && claim.participantId === participantId);
+  }
+
+  function toggleClaim({ billItemId, participantId }: { billItemId: string; participantId: string }) {
+    const isCurrentlyClaimed = isItemClaimedByParticipant({ billItemId, participantId });
+
+    setLocalClaims((current) =>
+      isCurrentlyClaimed
+        ? current.filter((claim) => !(claim.billItemId === billItemId && claim.participantId === participantId))
+        : [...current, { billItemId, participantId }],
+    );
+    setIsDirty(true);
+  }
+
+  function handleTogglePayer({ participantId }: { participantId: string }) {
+    setLocalPayerId((current) => (current === participantId ? null : participantId));
+    setIsDirty(true);
+  }
+
+  async function handleSave() {
+    const displayNameById = new Map(localParticipants.map((participant) => [participant.id, participant.displayName]));
+
+    const hasSucceeded = await saveBillSplit({
+      participants: localParticipants.map((participant) => ({ displayName: participant.displayName })),
+      claims: localClaims.map((claim) => ({
+        billItemId: claim.billItemId,
+        participantDisplayName: displayNameById.get(claim.participantId) ?? '',
+        splitCount: DEFAULT_SPLIT_COUNT,
+      })),
+      payerDisplayName: localPayerId ? displayNameById.get(localPayerId) ?? null : null,
+    });
+
+    if (!hasSucceeded) return;
+
+    setIsDirty(false);
     onChanged();
-  }
-
-  async function handleRemoveDiner({ participantId }: { participantId: string }) {
-    const hasSucceeded = await deleteParticipant({ participantId });
-
-    if (hasSucceeded) onChanged();
-  }
-
-  function isItemClaimedByParticipant({ item, participantId }: { item: ApiBillItem; participantId: string }): boolean {
-    return item.claims.some((claim) => claim.participantId === participantId);
-  }
-
-  async function toggleClaim({ item, participantId }: { item: ApiBillItem; participantId: string }) {
-    const isCurrentlyClaimed = isItemClaimedByParticipant({ item, participantId });
-
-    const hasSucceeded = isCurrentlyClaimed
-      ? await unclaimItem({ billItemId: item.id, participantId })
-      : await claimItem({ billItemId: item.id, participantId, splitCount: DEFAULT_SPLIT_COUNT });
-
-    if (hasSucceeded) onChanged();
   }
 
   async function handleConfirmCloseBill() {
@@ -85,17 +134,9 @@ export function DinerSplitEditor({
     if (hasSucceeded) onChanged();
   }
 
-  async function handleTogglePayer({ participantId }: { participantId: string }) {
-    const isAlreadyPayer = billPayerParticipantId === participantId;
-    const nextParticipantId = isAlreadyPayer ? null : participantId;
-
-    const hasSucceeded = await setBillPayer({ participantId: nextParticipantId });
-
-    if (hasSucceeded) onChanged();
-  }
   return (
     <div className="bg-panel border border-subtle rounded-3xl p-5">
-      <h1 className="font-body text-xl font-semibold tracking-tight text-primary mb-4">Tabela de Produtos</h1>
+      <h1 className="font-body text-xl font-semibold tracking-tight text-primary mb-4">Quem comeu o quê</h1>
 
       {isClosed && (
         <p className="mb-4 text-sm font-body text-secondary border border-subtle rounded-xl px-3 py-2">
@@ -105,35 +146,38 @@ export function DinerSplitEditor({
 
       {isOpen && (
         <>
-          <form onSubmit={handleAddDiner} className="flex gap-2 mb-6">
+          <form onSubmit={handleAddDiner} className="flex gap-2 mb-2">
             <input
               value={newDinerName}
-              onChange={(event) => setNewDinerName(event.target.value)}
+              onChange={(event) => {
+                setNewDinerName(event.target.value);
+                setHasDuplicateNameError(false);
+              }}
               placeholder="Nome da pessoa"
               className="flex-1 bg-panel-raised border border-subtle rounded-lg px-3 py-2 font-body text-sm text-primary placeholder:text-secondary focus:outline-none focus:border-mint"
             />
             <button
               type="submit"
-              disabled={isCreatingDiner || !newDinerName.trim()}
+              disabled={!newDinerName.trim()}
               className="bg-mint text-on-accent font-body font-semibold text-sm rounded-lg px-4 disabled:opacity-60"
             >
               Adicionar
             </button>
           </form>
 
-          {createDinerErrorCode === 'display_name_already_in_use' && (
-            <p className="text-sm font-body text-negative -mt-4 mb-4">Já existe uma pessoa com esse nome.</p>
+          {hasDuplicateNameError && (
+            <p className="text-sm font-body text-negative mb-4">Já existe uma pessoa com esse nome.</p>
           )}
         </>
       )}
 
       {hasNoDiners && isOpen && (
-        <p className="font-body text-sm text-secondary mb-6">Adicione as pessoas que participaram dessa conta.</p>
+        <p className="font-body text-sm text-secondary mb-6 mt-4">Adicione as pessoas que participaram dessa conta.</p>
       )}
 
       {!hasNoDiners && (
-        <div className="mb-4 flex flex-wrap gap-2">
-          {participants.map((participant) => (
+        <div className="mb-4 mt-4 flex flex-wrap gap-2">
+          {localParticipants.map((participant) => (
             <span key={participant.id} className="flex items-center gap-1.5 border border-subtle rounded-full px-3 py-1 text-sm font-body text-primary">
               {participant.displayName}
               {isOpen && (
@@ -155,14 +199,13 @@ export function DinerSplitEditor({
           <p className="font-body text-xs uppercase tracking-widest text-secondary mb-2">Quem pagou a conta?</p>
 
           <div className="flex flex-wrap gap-2">
-            {participants.map((participant) => {
-              const isPayer = billPayerParticipantId === participant.id;
+            {localParticipants.map((participant) => {
+              const isPayer = localPayerId === participant.id;
 
               return (
                 <button
                   key={participant.id}
                   onClick={() => handleTogglePayer({ participantId: participant.id })}
-                  disabled={isSettingPayer}
                   className={`text-xs font-body px-2.5 py-1 rounded-full border transition-colors ${
                     isPayer ? 'bg-mint text-on-accent border-mint font-semibold' : 'border-subtle text-secondary hover:border-mint/50'
                   }`}
@@ -187,14 +230,14 @@ export function DinerSplitEditor({
               </div>
 
               <div className="mt-2 flex flex-wrap gap-2">
-                {participants.map((participant) => {
-                  const isSelected = isItemClaimedByParticipant({ item, participantId: participant.id });
+                {localParticipants.map((participant) => {
+                  const isSelected = isItemClaimedByParticipant({ billItemId: item.id, participantId: participant.id });
 
                   return (
                     <button
                       key={participant.id}
-                      onClick={() => toggleClaim({ item, participantId: participant.id })}
-                      disabled={isTogglingClaim || !isOpen}
+                      onClick={() => toggleClaim({ billItemId: item.id, participantId: participant.id })}
+                      disabled={!isOpen}
                       className={`text-xs font-body px-2.5 py-1 rounded-full border transition-colors ${
                         isSelected ? 'bg-mint-dim text-mint border-mint/50' : 'border-subtle text-secondary hover:border-mint/30'
                       }`}
@@ -209,23 +252,47 @@ export function DinerSplitEditor({
         </div>
       )}
 
+      {isOpen && (
+        <button
+          onClick={handleSave}
+          disabled={isSaving || !isDirty}
+          className="mt-6 w-full bg-mint hover:bg-mint-mid text-on-accent font-body font-semibold rounded-xl py-2.5 transition-colors disabled:opacity-60"
+        >
+          {isSaving ? 'Salvando...' : isDirty ? 'Salvar' : 'Salvo'}
+        </button>
+      )}
+
+      {saveErrorCode && (
+        <p className="mt-2 text-sm font-body text-negative text-center">Não foi possível salvar. Tente novamente.</p>
+      )}
+
       <button
         onClick={() => setIsSummaryVisible((current) => !current)}
-        className="mt-6 w-full border border-subtle text-primary font-body text-sm rounded-xl py-2.5 hover:border-mint/50 transition-colors"
+        className="mt-4 w-full border border-subtle text-primary font-body text-sm rounded-xl py-2.5 hover:border-mint/50 transition-colors"
       >
         {isSummaryVisible ? 'Ocultar resumo' : 'Ver resumo'}
       </button>
+
+      {isDirty && isSummaryVisible && (
+        <p className="mt-2 text-xs font-body text-secondary text-center">
+          O resumo abaixo reflete a última versão salva, não as alterações pendentes.
+        </p>
+      )}
 
       {isSummaryVisible && <BillSummaryPanel billId={billId} />}
 
       {isOpen && (
         <button
           onClick={() => setIsCloseDialogOpen(true)}
-          disabled={hasNoDiners}
+          disabled={hasNoDiners || isDirty}
           className="mt-4 w-full bg-mint hover:bg-mint-mid text-on-accent font-body font-semibold rounded-xl py-2.5 transition-colors disabled:opacity-60"
         >
           Fechar conta
         </button>
+      )}
+
+      {isOpen && isDirty && (
+        <p className="mt-2 text-xs font-body text-secondary text-center">Salve as alterações antes de fechar a conta.</p>
       )}
 
       <ConfirmDialog
