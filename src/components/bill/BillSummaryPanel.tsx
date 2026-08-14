@@ -10,8 +10,8 @@ const EXPORT_IMAGE_FILE_NAME = 'resumo-divide-a-conta.png';
 const RING_RADIUS = 34;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
-export function BillSummaryPanel({ billId }: { billId: string }) {
-  const { summary, isLoading } = useBillSummary({ billId, isEnabled: true });
+export function BillSummaryPanel({ billId, refreshKey }: { billId: string; refreshKey?: number }) {
+  const { summary, isLoading } = useBillSummary({ billId, isEnabled: true, refreshKey });
   const summaryRef = useRef<HTMLDivElement>(null);
 
   async function exportSummaryAsImage() {
