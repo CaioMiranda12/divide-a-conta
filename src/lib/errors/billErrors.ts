@@ -51,3 +51,9 @@ export class BillNotOpenForClosingError extends Error {
     super('bill_not_open');
   }
 }
+
+export class BillNotOpenForEditingError extends Error {
+  constructor() {
+    super('bill_not_open');
+  }
+}
