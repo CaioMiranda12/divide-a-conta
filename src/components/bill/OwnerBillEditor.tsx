@@ -34,6 +34,8 @@ export function OwnerBillEditor({
   const [editableItems, setEditableItems] = useState<EditableBillItem[]>(items);
   const [isMismatchDialogOpen, setIsMismatchDialogOpen] = useState(false);
 
+  const hasNegativeServiceFee = serviceFeePercent < 0;
+
   const { updateBillItems, isSubmitting } = useUpdateBillItems({ billId: bill.id });
   const { confirmBill, isConfirming } = useConfirmBill({ billId: bill.id });
 
@@ -111,6 +113,8 @@ export function OwnerBillEditor({
   }
 
   function handleDivideBillClick() {
+    if (hasNegativeServiceFee) return;
+
     if (hasMismatch) {
       setIsMismatchDialogOpen(true);
       return;
@@ -169,13 +173,21 @@ export function OwnerBillEditor({
             Taxa de serviço (%)
             <input
               type="number"
-              value={serviceFeePercent}
               min={0}
+              value={serviceFeePercent}
               onChange={(event) => setServiceFeePercent(Number(event.target.value))}
               onBlur={handleHeaderFieldBlur}
-              className="w-16 bg-panel-raised border border-subtle rounded-lg px-2 py-1 font-money text-primary text-right tabular-nums focus:outline-none focus:border-mint"
+              className={`w-16 bg-panel-raised border rounded-lg px-2 py-1 font-money text-primary text-right tabular-nums focus:outline-none ${
+                hasNegativeServiceFee ? 'border-negative' : 'border-subtle focus:border-mint'
+              }`}
             />
           </div>
+
+          {hasNegativeServiceFee && (
+            <p className="mt-1 text-xs font-body text-negative text-right">
+              A taxa de serviço não pode ser negativa.
+            </p>
+          )}
 
           <div className="mt-3 flex items-center justify-between font-body text-sm text-secondary">
             Total da conta
@@ -203,7 +215,7 @@ export function OwnerBillEditor({
 
           <button
             onClick={handleDivideBillClick}
-            disabled={isConfirming || editableItems.length === 0}
+            disabled={isConfirming || editableItems.length === 0 || hasNegativeServiceFee}
             className="mt-8 w-full bg-mint hover:bg-mint-mid text-on-accent font-body font-semibold rounded-xl py-2.5 transition-colors disabled:opacity-60"
           >
             {isConfirming ? 'Abrindo...' : 'Dividir a conta →'}
