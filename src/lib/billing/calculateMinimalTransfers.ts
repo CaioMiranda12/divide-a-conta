@@ -1,7 +1,10 @@
 export function calculateNetBalances({
   bills,
 }: {
-  bills: { payer: { displayName: string } | null; debts: { displayName: string; amountOwedInCents: number }[] }[];
+  bills: {
+    payer: { displayName: string } | null;
+    debts: { displayName: string; amountOwedInCents: number; hasPaid: boolean }[];
+  }[];
 }): Map<string, number> {
   const balanceByName = new Map<string, number>();
 
@@ -12,11 +15,13 @@ export function calculateNetBalances({
   bills.forEach((bill) => {
     if (!bill.payer) return;
 
-    const totalOwedToPayerInCents = bill.debts.reduce((sum, debt) => sum + debt.amountOwedInCents, 0);
+    const unpaidDebts = bill.debts.filter((debt) => !debt.hasPaid);
 
-    addToBalance(bill.payer.displayName, totalOwedToPayerInCents);
+    const totalRemainingForPayerInCents = unpaidDebts.reduce((sum, debt) => sum + debt.amountOwedInCents, 0);
 
-    bill.debts.forEach((debt) => {
+    addToBalance(bill.payer.displayName, totalRemainingForPayerInCents);
+
+    unpaidDebts.forEach((debt) => {
       addToBalance(debt.displayName, -debt.amountOwedInCents);
     });
   });
