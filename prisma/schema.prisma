@@ -63,6 +63,7 @@ model Participant {
   id          String   @id @default(uuid())
   billId      String   @map("bill_id")
   displayName String   @map("display_name")
+  hasPaid     Boolean  @default(false) @map("has_paid")
   createdAt   DateTime @default(now()) @map("created_at")
 
   bill      Bill        @relation(fields: [billId], references: [id], onDelete: Cascade)
