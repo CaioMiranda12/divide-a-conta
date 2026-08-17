@@ -5,14 +5,22 @@ import { toPng } from 'html-to-image';
 import { motion } from 'framer-motion';
 import { useBillSummary } from '@/hooks/useBillSummary';
 import { centsToDisplayValue } from '@/utils/currency';
+import { useSetParticipantPaidStatus } from '@/hooks/useSetParticipantPaidStatus';
 
 const EXPORT_IMAGE_FILE_NAME = 'resumo-divide-a-conta.png';
 const RING_RADIUS = 34;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 export function BillSummaryPanel({ billId, refreshKey }: { billId: string; refreshKey?: number }) {
-  const { summary, isLoading } = useBillSummary({ billId, isEnabled: true, refreshKey });
+  const { summary, isLoading, reloadSummary } = useBillSummary({ billId, isEnabled: true, refreshKey });
+  const { setParticipantPaidStatus, isSubmitting: isTogglingPaid } = useSetParticipantPaidStatus({ billId });
   const summaryRef = useRef<HTMLDivElement>(null);
+
+  async function handleTogglePaid({ participantId, hasPaid }: { participantId: string; hasPaid: boolean }) {
+    const hasSucceeded = await setParticipantPaidStatus({ participantId, hasPaid: !hasPaid });
+
+    if (hasSucceeded) reloadSummary();
+  }
 
   async function exportSummaryAsImage() {
     const summaryElement = summaryRef.current;
@@ -133,16 +141,36 @@ export function BillSummaryPanel({ billId, refreshKey }: { billId: string; refre
               Deve para {summary.payer.displayName}
             </p>
 
-            <ul className="space-y-1">
+            <ul className="space-y-2">
               {summary.debts.map((debt) => (
-                <li key={debt.participantId} className="flex items-baseline justify-between font-money text-sm text-primary">
-                  <span>{debt.displayName}</span>
-                  <span className="tabular-nums">
+                <li key={debt.participantId} className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleTogglePaid({ participantId: debt.participantId, hasPaid: debt.hasPaid })}
+                    disabled={isTogglingPaid}
+                    className={`text-xs font-body px-2 py-0.5 rounded-full border shrink-0 disabled:opacity-60 ${
+                      debt.hasPaid ? 'bg-mint-dim text-mint border-mint/40' : 'border-subtle text-secondary hover:border-mint/40'
+                    }`}
+                  >
+                    {debt.hasPaid ? 'Pago' : 'Marcar como pago'}
+                  </button>
+
+                  <span className={`flex-1 min-w-0 truncate font-body text-sm ${debt.hasPaid ? 'line-through text-secondary' : 'text-primary'}`}>
+                    {debt.displayName}
+                  </span>
+
+                  <span className={`font-money text-sm tabular-nums shrink-0 ${debt.hasPaid ? 'line-through text-secondary' : 'text-primary'}`}>
                     R$ {centsToDisplayValue({ amountInCents: debt.amountOwedInCents })}
                   </span>
                 </li>
               ))}
             </ul>
+
+            <div className="mt-3 pt-3 border-t border-subtle flex items-baseline justify-between">
+              <span className="font-body text-xs uppercase tracking-widest text-secondary">Restante a receber</span>
+              <span className="font-money text-sm tabular-nums text-mint">
+                R$ {centsToDisplayValue({ amountInCents: summary.totalRemainingInCents })}
+              </span>
+            </div>
           </div>
         )}
       </div>
