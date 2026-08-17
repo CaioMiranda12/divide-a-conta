@@ -47,6 +47,7 @@ export type ApiBillDebt = {
   participantId: string;
   displayName: string;
   amountOwedInCents: number;
+  hasPaid: boolean;
 };
 
 export type ApiBillPayer = { participantId: string; displayName: string };
@@ -59,6 +60,7 @@ export type ApiBillSummary = {
   hasUnclaimedItems: boolean;
   payer: ApiBillPayer | null;
   debts: ApiBillDebt[];
+  totalRemainingInCents: number;
   claimStats: ApiBillClaimStats;
 };
 
