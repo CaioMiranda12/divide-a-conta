@@ -109,20 +109,33 @@ export function MergedBillSummaryView() {
               <p className="mt-1 text-xs font-body text-secondary">Pago por {bill.payer.displayName}</p>
             )}
 
+            {bill.payer && bill.debts.length > 0 && (
+              <div className="mt-2 flex items-center gap-4 text-xs font-money tabular-nums">
+                <span className="text-mint">Pago: R$ {centsToDisplayValue({ amountInCents: bill.paidInCentsForBill })}</span>
+                <span className="text-negative">Resta: R$ {centsToDisplayValue({ amountInCents: bill.remainingInCentsForBill })}</span>
+              </div>
+            )}
+
             {bill.hasUnclaimedItems && (
               <p className="mt-1 text-xs font-body text-secondary">Existem itens sem dono nessa conta.</p>
             )}
 
             {bill.payer && bill.debts.length > 0 && (
               <ul className="mt-2 space-y-0.5">
-                <li className="flex items-baseline justify-between text-xs font-money text-primary">
-                    <span>{bill.payer.displayName}</span>
+                <li className="flex items-baseline justify-between text-xs font-money text-secondary line-through">
+                    <span>{bill.payer.displayName} (Autor)</span>
                     <span className="tabular-nums">
                       R$ {centsToDisplayValue({ amountInCents: bill.totalAmountInCents - bill.debts.reduce((sum, debt) => sum + debt.amountOwedInCents, 0) })}
                     </span>
                   </li>
+
                 {bill.debts.map((debt) => (
-                  <li key={debt.participantId} className="flex items-baseline justify-between text-xs font-money text-primary">
+                  <li
+                    key={debt.participantId}
+                    className={`flex items-baseline justify-between text-xs font-money ${
+                      debt.hasPaid ? 'text-secondary line-through' : 'text-primary'
+                    }`}
+                  >
                     <span>{debt.displayName}</span>
                     <span className="tabular-nums">
                       R$ {centsToDisplayValue({ amountInCents: debt.amountOwedInCents })}
