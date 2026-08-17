@@ -71,6 +71,8 @@ export type ApiMergedBillEntry = {
   hasUnclaimedItems: boolean;
   payer: ApiBillPayer | null;
   debts: ApiBillDebt[];
+  paidInCentsForBill: number;
+  remainingInCentsForBill: number;
 };
 
 export type ApiCombinedParticipant = {
