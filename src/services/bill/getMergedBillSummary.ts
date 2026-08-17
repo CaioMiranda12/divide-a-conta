@@ -59,8 +59,17 @@ export async function getMergedBillSummary({
             participantId: participant.participantId,
             displayName: participant.displayName,
             amountOwedInCents: participant.amountInCents,
+            hasPaid: bill.participants.find((p) => p.id === participant.participantId)?.hasPaid ?? false,
           }))
       : [];
+
+    const paidInCentsForBill = debts
+      .filter((debt) => debt.hasPaid)
+      .reduce((sum, debt) => sum + debt.amountOwedInCents, 0);
+
+    const remainingInCentsForBill = debts
+      .filter((debt) => !debt.hasPaid)
+      .reduce((sum, debt) => sum + debt.amountOwedInCents, 0);
 
     participantsSummary.forEach((participant) => {
       const billEntry = { billId: bill.id, restaurantName: bill.restaurantName, amountInCents: participant.amountInCents };
@@ -88,6 +97,8 @@ export async function getMergedBillSummary({
         ? { participantId: payerParticipant.id, displayName: payerParticipant.displayName }
         : null,
       debts,
+      paidInCentsForBill,
+      remainingInCentsForBill,
     };
   });
 
