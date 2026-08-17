@@ -36,53 +36,17 @@ export async function getBillSummary({ billId }: { billId: string }) {
   });
 
   const payerParticipant = bill.participants.find((participant) => participant.id === bill.paidByParticipantId);
-
-  const paidParticipantIds = new Set(bill.participants.filter((participant) => participant.hasPaid).map((p) => p.id));
-
-  const itemsForRecalculation = bill.items.map((item) => ({
-    billItemId: item.id,
-    description: item.description,
-    priceInCents: item.priceInCents,
-    quantity: item.quantity,
-    claims: item.claims
-      .filter((claim) => !paidParticipantIds.has(claim.participantId))
-      .map((claim) => ({ participantId: claim.participantId, splitCount: claim.splitCount })),
-  }));
-
-  const participantsForRecalculation = bill.participants
-    .filter((participant) => !participant.hasPaid)
-    .map((participant) => ({ id: participant.id, displayName: participant.displayName }));
-
-  const { participants: recalculatedSummary } = calculateBillSummary({
-    items: itemsForRecalculation,
-    participants: participantsForRecalculation,
-    serviceFeePercent: bill.serviceFeePercent,
-  });
+  const hasPaidById = new Map(bill.participants.map((participant) => [participant.id, participant.hasPaid]));
 
   const debts = payerParticipant
-    ? bill.participants
-        .filter((participant) => participant.id !== payerParticipant.id)
-        .map((participant) => {
-          if (participant.hasPaid) {
-            const original = participantsSummary.find((entry) => entry.participantId === participant.id);
-
-            return {
-              participantId: participant.id,
-              displayName: participant.displayName,
-              amountOwedInCents: original?.amountInCents ?? 0,
-              hasPaid: true,
-            };
-          }
-
-          const recalculated = recalculatedSummary.find((entry) => entry.participantId === participant.id);
-
-          return {
-            participantId: participant.id,
-            displayName: participant.displayName,
-            amountOwedInCents: recalculated?.amountInCents ?? 0,
-            hasPaid: false,
-          };
-        })
+    ? participantsSummary
+        .filter((participant) => participant.participantId !== payerParticipant.id)
+        .map((participant) => ({
+          participantId: participant.participantId,
+          displayName: participant.displayName,
+          amountOwedInCents: participant.amountInCents,
+          hasPaid: hasPaidById.get(participant.participantId) ?? false,
+        }))
     : [];
 
   const totalRemainingInCents = debts
